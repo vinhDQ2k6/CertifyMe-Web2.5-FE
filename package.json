@@ -5,7 +5,15 @@
         "dev": "vite",
         "build": "vite build",
         "preview": "vite preview",
-        "lint": "eslint --fix . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore"
+        "lint": "eslint --fix . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore",
+        "format": "prettier --write . --ignore-path .gitignore",
+        "contracts:install": "npm --prefix packages/contracts install",
+        "contracts:test": "npm --prefix packages/contracts run test",
+        "contracts:compile": "npm --prefix packages/contracts run compile",
+        "contracts:node": "npm --prefix packages/contracts run node",
+        "contracts:clean": "npm --prefix packages/contracts run clean",
+        "contracts:run:sepolia": "npm --prefix packages/contracts run run:sepolia",
+        "contracts:run:ethereum": "npm --prefix packages/contracts run run:ethereum"
     },
     "dependencies": {
         "@primeuix/themes": "^2.0.0",
@@ -29,5 +37,8 @@
         "tailwindcss": "^4.1.17",
         "unplugin-vue-components": "^0.27.3",
         "vite": "^5.3.1"
-    }
+    },
+    "workspaces": [
+        "packages/*"
+    ]
 }
