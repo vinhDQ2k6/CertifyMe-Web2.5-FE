@@ -14,8 +14,25 @@ const { quizzes, loading, fetchQuizzes } = useTeacher();
 const showForm = ref(false);
 const editingQuiz = ref(null);
 
+// Mock data for FE-only testing (remove when integrating with BE)
+const mockQuizzes = [
+    { id: 'q1', name: 'Lab 1: Biến và kiểu dữ liệu', questionsCount: 10, passingScore: 5.0, status: 'published' },
+    { id: 'q2', name: 'Lab 2: Vòng lặp và mảng', questionsCount: 10, passingScore: 5.0, status: 'published' },
+    { id: 'q3', name: 'Lab 3: OOP cơ bản', questionsCount: 10, passingScore: 5.0, status: 'published' },
+    { id: 'q4', name: 'Lab 4: Kế thừa và đa hình', questionsCount: 10, passingScore: 5.0, status: 'published' },
+    { id: 'q5', name: 'Lab 5: Collections Framework', questionsCount: 8, passingScore: 5.0, status: 'draft' }
+];
+
 onMounted(async () => {
-    await fetchQuizzes(route.params.classId);
+    try {
+        await fetchQuizzes(route.params.classId);
+    } catch {
+        // ignore API errors in FE-only mode
+    }
+    // Use mock data if no quizzes loaded from API
+    if (quizzes.value.length === 0) {
+        quizzes.value = mockQuizzes;
+    }
 });
 
 function goBack() {

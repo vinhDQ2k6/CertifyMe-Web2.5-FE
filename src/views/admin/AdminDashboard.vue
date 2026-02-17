@@ -7,16 +7,44 @@ import { onMounted, ref } from 'vue';
 const { certificates, stats, loading, fetchCertificates, searchCertificates, fetchStats } = useAdmin();
 const searchQuery = ref('');
 
+// Mock data for FE-only testing (remove when integrating with BE)
+const mockStats = { total: 156, issued: 150, revoked: 6 };
+
+const mockCertificates = [
+    { id: 'CERT-156', studentName: 'Nguyễn Văn An', studentEmail: 'annv@fpt.edu.vn', className: 'SD18301', courseCode: 'Java 6', gradeAverage: 8.5, issueDate: '2026-02-15', status: 'issued', blockchainHash: '0x7a8b9c1d...' },
+    { id: 'CERT-155', studentName: 'Trần Thị Bình', studentEmail: 'binhtt@fpt.edu.vn', className: 'SD18301', courseCode: 'Java 6', gradeAverage: 9.0, issueDate: '2026-02-15', status: 'issued', blockchainHash: '0x8b9c0d1e...' },
+    { id: 'CERT-154', studentName: 'Lê Văn Cường', studentEmail: 'cuonglv@fpt.edu.vn', className: 'SD18302', courseCode: 'React 3', gradeAverage: 7.8, issueDate: '2026-02-14', status: 'issued', blockchainHash: '0x9c0d1e2f...' },
+    { id: 'CERT-100', studentName: 'Phạm Thị Dung', studentEmail: 'dungpt@fpt.edu.vn', className: 'SD18201', courseCode: 'Web 5', gradeAverage: 8.0, issueDate: '2026-01-01', status: 'revoked', blockchainHash: '0xa0b1c2d3...' },
+    { id: 'CERT-099', studentName: 'Hoàng Minh Đức', studentEmail: 'duchm@fpt.edu.vn', className: 'SD18201', courseCode: 'Web 5', gradeAverage: 9.5, issueDate: '2025-12-28', status: 'issued', blockchainHash: '0xb1c2d3e4...' }
+];
+
 onMounted(async () => {
-    await fetchStats();
-    await fetchCertificates(20);
+    try {
+        await fetchStats();
+        await fetchCertificates(20);
+    } catch {
+        // ignore API errors in FE-only mode
+    }
+    // Use mock data if nothing loaded from API
+    if (stats.value.total === 0) {
+        stats.value = mockStats;
+    }
+    if (certificates.value.length === 0) {
+        certificates.value = mockCertificates;
+    }
 });
 
 async function handleSearch() {
     if (searchQuery.value.trim()) {
-        await searchCertificates(searchQuery.value.trim());
+        try {
+            await searchCertificates(searchQuery.value.trim());
+        } catch {
+            // Fallback: filter mock data locally for FE-only testing
+            const q = searchQuery.value.trim().toLowerCase();
+            certificates.value = mockCertificates.filter((c) => c.id.toLowerCase().includes(q) || c.studentEmail.toLowerCase().includes(q) || c.studentName.toLowerCase().includes(q));
+        }
     } else {
-        await fetchCertificates(20);
+        certificates.value = mockCertificates;
     }
 }
 </script>

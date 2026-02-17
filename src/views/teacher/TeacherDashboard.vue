@@ -11,9 +11,20 @@ const { classes, loading, fetchClasses } = useTeacher();
 const totalStudents = computed(() => classes.value.reduce((sum, c) => sum + (c.studentCount || 0), 0));
 const totalQuizzes = computed(() => classes.value.reduce((sum, c) => sum + (c.quizCount || 0), 0));
 
+// Mock data for FE-only testing (remove when integrating with BE)
+const mockClasses = [
+    { id: 'cl1', code: 'SD18301', courseName: 'Lập trình Java 6', studentCount: 30, quizCount: 5, status: 'active', createdDate: '2026-01-01' },
+    { id: 'cl2', code: 'SD18302', courseName: 'Lập trình React 3', studentCount: 28, quizCount: 5, status: 'active', createdDate: '2026-01-01' },
+    { id: 'cl3', code: 'SD18201', courseName: 'Phát triển Web 5', studentCount: 32, quizCount: 5, status: 'completed', createdDate: '2025-09-01' }
+];
+
 onMounted(async () => {
     if (user.value?.id) {
         await fetchClasses(user.value.id);
+    }
+    // Use mock data if no classes loaded from API
+    if (classes.value.length === 0) {
+        classes.value = mockClasses;
     }
 });
 </script>

@@ -10,12 +10,46 @@ const router = useRouter();
 const { currentClass, students, quizzes, loading, fetchClassDetail, fetchStudents, fetchQuizzes } = useTeacher();
 const activeTab = ref(0);
 
+// Mock data for FE-only testing (remove when integrating with BE)
+const mockClass = { id: 'cl1', code: 'SD18301', courseName: 'Lập trình Java 6', courseId: 'c1', studentCount: 30, quizCount: 5, status: 'active' };
+
+const mockStudents = [
+    { id: 's1', name: 'Nguyễn Văn An', email: 'annv@fpt.edu.vn', completedQuizzes: 5, totalQuizzes: 5, status: 'passed' },
+    { id: 's2', name: 'Trần Thị Bình', email: 'binhtt@fpt.edu.vn', completedQuizzes: 4, totalQuizzes: 5, status: 'learning' },
+    { id: 's3', name: 'Lê Văn Cường', email: 'cuonglv@fpt.edu.vn', completedQuizzes: 3, totalQuizzes: 5, status: 'learning' },
+    { id: 's4', name: 'Phạm Thị Dung', email: 'dungpt@fpt.edu.vn', completedQuizzes: 5, totalQuizzes: 5, status: 'passed' },
+    { id: 's5', name: 'Hoàng Minh Đức', email: 'duchm@fpt.edu.vn', completedQuizzes: 1, totalQuizzes: 5, status: 'incomplete' },
+    { id: 's6', name: 'Võ Thị Hoa', email: 'hoavt@fpt.edu.vn', completedQuizzes: 4, totalQuizzes: 5, status: 'learning' }
+];
+
+const mockQuizzes = [
+    { id: 'q1', name: 'Lab 1: Biến và kiểu dữ liệu', score: 8.5, maxScore: 10, status: 'completed', isAvailable: true },
+    { id: 'q2', name: 'Lab 2: Vòng lặp và mảng', score: 9.0, maxScore: 10, status: 'completed', isAvailable: true },
+    { id: 'q3', name: 'Lab 3: OOP cơ bản', score: 7.5, maxScore: 10, status: 'completed', isAvailable: true },
+    { id: 'q4', name: 'Lab 4: Kế thừa và đa hình', score: null, maxScore: 10, status: 'pending', isAvailable: true },
+    { id: 'q5', name: 'Lab 5: Collections Framework', score: null, maxScore: 10, status: 'locked', isAvailable: false }
+];
+
 onMounted(async () => {
     const classId = route.params.id;
-    await fetchClassDetail(classId);
-    await fetchStudents(classId);
-    if (currentClass.value?.courseId) {
-        await fetchQuizzes(currentClass.value.courseId);
+    try {
+        await fetchClassDetail(classId);
+        await fetchStudents(classId);
+        if (currentClass.value?.courseId) {
+            await fetchQuizzes(currentClass.value.courseId);
+        }
+    } catch {
+        // ignore API errors in FE-only mode
+    }
+    // Use mock data if nothing loaded from API
+    if (!currentClass.value) {
+        currentClass.value = mockClass;
+    }
+    if (students.value.length === 0) {
+        students.value = mockStudents;
+    }
+    if (quizzes.value.length === 0) {
+        quizzes.value = mockQuizzes;
     }
 });
 

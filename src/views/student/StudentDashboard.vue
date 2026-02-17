@@ -6,11 +6,79 @@ import { useAuth } from '@/composables/useAuth';
 import { onMounted } from 'vue';
 
 const { user } = useAuth();
-const { inProgressCourses, completedCourses, loading, fetchCourses } = useStudent();
+const { courses, inProgressCourses, completedCourses, loading, fetchCourses } = useStudent();
+
+// Mock data for FE-only testing (remove when integrating with BE)
+const mockCourses = [
+    {
+        courseId: 'c1',
+        courseIcon: '☕',
+        courseName: 'Lập trình Java 6',
+        courseCode: 'SD18301',
+        teacherName: 'Thầy Nguyễn Văn A',
+        progress: 80,
+        totalQuizzes: 5,
+        completedQuizzes: 4,
+        isCompleted: false,
+        averageScore: 8.5
+    },
+    {
+        courseId: 'c2',
+        courseIcon: '⚛️',
+        courseName: 'Lập trình React 3',
+        courseCode: 'SD18302',
+        teacherName: 'Cô Trần Thị B',
+        progress: 60,
+        totalQuizzes: 5,
+        completedQuizzes: 3,
+        isCompleted: false,
+        averageScore: 7.8
+    },
+    {
+        courseId: 'c3',
+        courseIcon: '🌐',
+        courseName: 'Phát triển Web 5',
+        courseCode: 'SD18201',
+        teacherName: 'Thầy Lê Văn C',
+        progress: 40,
+        totalQuizzes: 5,
+        completedQuizzes: 2,
+        isCompleted: false,
+        averageScore: 7.0
+    },
+    {
+        courseId: 'c4',
+        courseIcon: '🐍',
+        courseName: 'Lập trình Python',
+        courseCode: 'SD18101',
+        teacherName: 'Cô Phạm Thị D',
+        progress: 100,
+        totalQuizzes: 5,
+        completedQuizzes: 5,
+        isCompleted: true,
+        averageScore: 9.2
+    },
+    {
+        courseId: 'c5',
+        courseIcon: '🗄️',
+        courseName: 'Cơ sở dữ liệu',
+        courseCode: 'SD18102',
+        teacherName: 'Thầy Hoàng Văn E',
+        progress: 100,
+        totalQuizzes: 4,
+        completedQuizzes: 4,
+        isCompleted: true,
+        averageScore: 8.8
+    }
+];
 
 onMounted(async () => {
     if (user.value?.id) {
         await fetchCourses(user.value.id);
+    }
+    // Use mock data if no courses loaded from API
+    if (courses.value.length === 0) {
+        courses.value = mockCourses;
     }
 });
 </script>
