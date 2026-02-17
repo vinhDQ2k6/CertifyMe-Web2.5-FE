@@ -1,5 +1,5 @@
-import AppLayout from '@/layout/AppLayout.vue';
 import { useAuth } from '@/composables/useAuth';
+import AppLayout from '@/layout/AppLayout.vue';
 import { createRouter, createWebHistory } from 'vue-router';
 
 const router = createRouter({
@@ -39,13 +39,13 @@ const router = createRouter({
                     path: '/student/dashboard',
                     name: 'studentDashboard',
                     component: () => import('@/views/student/StudentDashboard.vue'),
-                    meta: { requiresAuth: true, roles: ['student'] }
+                    meta: { requiresAuth: false, roles: ['student'] }
                 },
                 {
                     path: '/student/course/:id',
                     name: 'courseDetail',
                     component: () => import('@/views/student/CourseDetail.vue'),
-                    meta: { requiresAuth: true, roles: ['student'] }
+                    meta: { requiresAuth: false, roles: ['student'] }
                 },
 
                 // Teacher routes
@@ -53,19 +53,19 @@ const router = createRouter({
                     path: '/teacher/dashboard',
                     name: 'teacherDashboard',
                     component: () => import('@/views/teacher/TeacherDashboard.vue'),
-                    meta: { requiresAuth: true, roles: ['teacher'] }
+                    meta: { requiresAuth: false, roles: ['teacher'] }
                 },
                 {
                     path: '/teacher/class/:id',
                     name: 'classDetail',
                     component: () => import('@/views/teacher/ClassDetail.vue'),
-                    meta: { requiresAuth: true, roles: ['teacher'] }
+                    meta: { requiresAuth: false, roles: ['teacher'] }
                 },
                 {
                     path: '/teacher/quiz/:classId',
                     name: 'quizManagement',
                     component: () => import('@/views/teacher/QuizManagement.vue'),
-                    meta: { requiresAuth: true, roles: ['teacher'] }
+                    meta: { requiresAuth: false, roles: ['teacher'] }
                 },
 
                 // Admin routes
@@ -73,13 +73,13 @@ const router = createRouter({
                     path: '/admin/dashboard',
                     name: 'adminDashboard',
                     component: () => import('@/views/admin/AdminDashboard.vue'),
-                    meta: { requiresAuth: true, roles: ['admin'] }
+                    meta: { requiresAuth: false, roles: ['admin'] }
                 },
                 {
                     path: '/admin/certificate/:id',
                     name: 'certificateDetail',
                     component: () => import('@/views/admin/CertificateManagement.vue'),
-                    meta: { requiresAuth: true, roles: ['admin'] }
+                    meta: { requiresAuth: false, roles: ['admin'] }
                 },
 
                 // Template routes (kept for reference/development)
