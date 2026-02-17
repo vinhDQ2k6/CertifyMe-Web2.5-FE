@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue';
 
-defineProps({
+const props = defineProps({
     visible: {
         type: Boolean,
         default: false
@@ -21,7 +21,7 @@ const emit = defineEmits(['confirm', 'cancel', 'update:visible']);
 const reason = ref('');
 
 function handleConfirm() {
-    emit('confirm', { certificateId: emit.certificateId, reason: reason.value });
+    emit('confirm', { certificateId: props.certificateId, reason: reason.value });
     reason.value = '';
 }
 
