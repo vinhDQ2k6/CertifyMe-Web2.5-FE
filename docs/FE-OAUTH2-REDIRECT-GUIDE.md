@@ -560,16 +560,16 @@ export function useAuth() {
 
 ### ✅ Frontend Checklist
 
-- [ ] `src/views/auth/OAuth2RedirectHandler.vue` exists
-- [ ] Component extracts token from `?token=` parameter
-- [ ] Component calls `handleOAuth2Callback(token)`
-- [ ] `AuthService.setAuthToken()` saves to localStorage
-- [ ] `AuthService.getUserFromToken()` decodes JWT
-- [ ] Role is UPPERCASE (STUDENT, TEACHER, ADMIN)
-- [ ] Router has `/oauth2/redirect` public route
-- [ ] Dashboard routes have `requiresAuth: true`
-- [ ] Router guard checks role with UPPERCASE comparison
-- [ ] Navigation redirects correct dashboard per role
+- [x] `src/views/auth/OAuth2RedirectHandler.vue` exists
+- [x] Component extracts token from `?token=` parameter
+- [x] Component calls `handleOAuth2Callback(token)`
+- [x] `AuthService.setAuthToken()` saves to localStorage
+- [x] `AuthService.getUserFromToken()` decodes JWT
+- [x] Role is UPPERCASE (STUDENT, TEACHER, ADMIN)
+- [x] Router has `/oauth2/redirect` public route
+- [x] Dashboard routes have `requiresAuth: true`
+- [x] Router guard checks role with UPPERCASE comparison
+- [x] Navigation redirects correct dashboard per role
 
 ---
 
