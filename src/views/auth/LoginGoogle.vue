@@ -1,23 +1,10 @@
 <script setup>
 import { useAuth } from '@/composables/useAuth';
-import { useRouter } from 'vue-router';
 
-const router = useRouter();
-const { login, loading, userRole } = useAuth();
+const { redirectToLogin, loading } = useAuth();
 
-async function handleGoogleLogin() {
-    try {
-        await login();
-        if (userRole.value === 'admin') {
-            router.push({ name: 'adminDashboard' });
-        } else if (userRole.value === 'teacher') {
-            router.push({ name: 'teacherDashboard' });
-        } else {
-            router.push({ name: 'studentDashboard' });
-        }
-    } catch (error) {
-        console.error('Login failed:', error);
-    }
+function handleGoogleLogin() {
+    redirectToLogin();
 }
 </script>
 

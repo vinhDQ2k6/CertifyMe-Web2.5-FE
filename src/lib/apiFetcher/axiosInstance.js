@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const axiosInstance = axios.create({
-    baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api',
+    baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api',
     timeout: 10000,
     headers: {
         'Content-Type': 'application/json'
@@ -29,8 +29,10 @@ axiosInstance.interceptors.response.use(
     },
     (error) => {
         if (error.response?.status === 401) {
-            // Handle unauthorized access, e.g., redirect to login
-            console.warn('Unauthorized access detected');
+            console.warn('Unauthorized - token expired or invalid');
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('authUser');
+            window.location.href = '/auth/login';
         }
         return Promise.reject(error);
     }
