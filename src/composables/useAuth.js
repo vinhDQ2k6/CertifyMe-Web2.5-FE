@@ -38,7 +38,9 @@ export function useAuth() {
      * Backend handles all OAuth2 flow
      */
     const redirectToLogin = () => {
-        window.location.href = 'http://localhost:8080/oauth2/authorization/google';
+        const backendUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+        const baseUrl = backendUrl.replace(/\/api\/?$/, '');
+        window.location.href = `${baseUrl}/oauth2/authorization/google`;
     };
 
     /**

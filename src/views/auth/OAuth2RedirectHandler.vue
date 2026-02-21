@@ -37,7 +37,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="flex items-center justify-center min-h-screen bg-surface-50 dark:bg-surface-950">
+    <div class="flex items-center justify-center min-h-screen bg-surface-50 dark:bg-surface-950" role="status" aria-live="polite">
         <div class="text-center">
             <div class="flex justify-center mb-4">
                 <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary-100 dark:bg-primary-900">
@@ -50,17 +50,4 @@ onMounted(() => {
     </div>
 </template>
 
-<style scoped>
-@keyframes spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
-}
 
-.pi-spin {
-    animation: spin 1s linear infinite;
-}
-</style>
