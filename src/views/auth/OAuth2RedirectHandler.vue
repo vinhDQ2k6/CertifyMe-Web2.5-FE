@@ -2,13 +2,21 @@
 import { onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuth } from '@/composables/useAuth';
+import AuthService from '@/services/AuthService';
 
 const router = useRouter();
 const { handleOAuth2Callback } = useAuth();
 
 onMounted(() => {
     const urlParams = new URLSearchParams(window.location.search);
+    const error = urlParams.get('error');
     const token = urlParams.get('token');
+
+    if (error) {
+        console.error('OAuth2 error:', error);
+        router.push({ name: 'login' });
+        return;
+    }
 
     if (!token) {
         console.error('No token in OAuth2 redirect URL');
@@ -19,18 +27,27 @@ onMounted(() => {
     try {
         const userInfo = handleOAuth2Callback(token);
 
-        if (userInfo.role === 'STUDENT') {
-            router.push({ name: 'studentDashboard' });
-        } else if (userInfo.role === 'TEACHER') {
-            router.push({ name: 'teacherDashboard' });
-        } else if (userInfo.role === 'ADMIN') {
-            router.push({ name: 'adminDashboard' });
-        } else {
-            console.error('Unknown user role:', userInfo.role);
+        const roleRedirects = {
+            STUDENT: { name: 'studentDashboard' },
+            TEACHER: { name: 'teacherDashboard' },
+            ADMIN: { name: 'adminDashboard' }
+        };
+
+        const redirectRoute = roleRedirects[userInfo.role];
+
+        if (!redirectRoute) {
+            console.error('Unknown role:', userInfo.role);
+            AuthService.clearAuthData();
             router.push({ name: 'login' });
+            return;
         }
-    } catch (error) {
-        console.error('Failed to process OAuth2 callback:', error);
+
+        // Clean URL history (remove ?token=...)
+        window.history.replaceState({}, document.title, window.location.pathname);
+
+        router.push(redirectRoute);
+    } catch (err) {
+        console.error('OAuth2 callback error:', err);
         router.push({ name: 'login' });
     }
 });
@@ -49,5 +66,3 @@ onMounted(() => {
         </div>
     </div>
 </template>
-
-
