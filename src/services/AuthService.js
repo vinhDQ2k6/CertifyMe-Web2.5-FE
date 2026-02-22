@@ -87,6 +87,20 @@ const AuthService = {
     },
 
     /**
+     * Check role of current user via /api/auth/check-role
+     * Returns message like "You are logged in as: STUDENT"
+     */
+    async checkRole() {
+        try {
+            const response = await axiosInstance.get('/auth/check-role');
+            return response.data;
+        } catch (error) {
+            console.error('Check role error:', error);
+            throw error;
+        }
+    },
+
+    /**
      * Logout - call backend endpoint + clear auth data
      */
     async logout() {

@@ -80,6 +80,40 @@ export function useAuth() {
     };
 
     /**
+     * Fetch current user details from backend /api/auth/me
+     * Gets full profile including avatarUrl, fullName
+     */
+    const fetchCurrentUser = async () => {
+        loading.value = true;
+        error.value = '';
+        try {
+            const userData = await AuthService.getCurrentUser();
+            user.value = userData;
+            userRole.value = userData.role;
+            isAuthenticated.value = true;
+            return userData;
+        } catch (err) {
+            error.value = err.response?.data?.error || 'Failed to fetch user info';
+            throw err;
+        } finally {
+            loading.value = false;
+        }
+    };
+
+    /**
+     * Check role of current user via backend
+     */
+    const checkRole = async () => {
+        try {
+            const result = await AuthService.checkRole();
+            return result;
+        } catch (err) {
+            console.error('Check role error:', err);
+            throw err;
+        }
+    };
+
+    /**
      * Logout user
      */
     const logout = async () => {
@@ -131,6 +165,8 @@ export function useAuth() {
         initAuth,
         redirectToLogin,
         handleOAuth2Callback,
+        fetchCurrentUser,
+        checkRole,
         logout,
         hasRole,
         getCurrentUser,
