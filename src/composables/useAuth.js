@@ -1,5 +1,5 @@
 import AuthService from '@/services/AuthService';
-import { ref, computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 // Module-level reactive state (shared across all components using useAuth)
@@ -36,11 +36,13 @@ export function useAuth() {
     /**
      * Redirect to Google OAuth2 login page on backend
      * Backend handles all OAuth2 flow
+     * @param {string} role - User selected role (STUDENT, TEACHER, ADMIN)
      */
-    const redirectToLogin = () => {
+    const redirectToLogin = (role) => {
         const backendUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
         const baseUrl = backendUrl.replace(/\/api\/?$/, '');
-        window.location.href = `${baseUrl}/oauth2/authorization/google`;
+        const redirectUrl = role ? `${baseUrl}/oauth2/authorization/google?role=${role}` : `${baseUrl}/oauth2/authorization/google`;
+        window.location.href = redirectUrl;
     };
 
     /**
