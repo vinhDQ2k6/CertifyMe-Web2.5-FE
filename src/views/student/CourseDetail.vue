@@ -83,7 +83,9 @@ function goBack() {
 }
 
 function handleQuizAction({ quizId, action }) {
-    console.log('Quiz action:', quizId, action);
+    if (action === 'start' || action === 'review') {
+        router.push({ name: 'quizPage', params: { quizId } });
+    }
 }
 
 function handleDownload() {

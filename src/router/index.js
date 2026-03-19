@@ -54,6 +54,18 @@ const router = createRouter({
                     component: () => import('@/views/student/CourseDetail.vue'),
                     meta: { requiresAuth: false, roles: ['STUDENT'] }
                 },
+                {
+                    path: '/student/quiz/:quizId',
+                    name: 'quizPage',
+                    component: () => import('@/views/student/QuizPage.vue'),
+                    meta: { requiresAuth: false, roles: ['STUDENT'] }
+                },
+                {
+                    path: '/student/certificates',
+                    name: 'studentCertificates',
+                    component: () => import('@/views/student/CertificatesPage.vue'),
+                    meta: { requiresAuth: false, roles: ['STUDENT'] }
+                },
 
                 // Teacher routes
                 {
@@ -74,6 +86,12 @@ const router = createRouter({
                     component: () => import('@/views/teacher/QuizManagement.vue'),
                     meta: { requiresAuth: false, roles: ['TEACHER'] }
                 },
+                {
+                    path: '/teacher/quiz/:classId/submissions',
+                    name: 'quizSubmissions',
+                    component: () => import('@/views/teacher/QuizSubmissionsPage.vue'),
+                    meta: { requiresAuth: false, roles: ['TEACHER'] }
+                },
 
                 // Admin routes
                 {
@@ -86,6 +104,12 @@ const router = createRouter({
                     path: '/admin/certificate/:id',
                     name: 'certificateDetail',
                     component: () => import('@/views/admin/CertificateManagement.vue'),
+                    meta: { requiresAuth: false, roles: ['ADMIN'] }
+                },
+                {
+                    path: '/admin/users',
+                    name: 'userManagement',
+                    component: () => import('@/views/admin/UserManagementPage.vue'),
                     meta: { requiresAuth: false, roles: ['ADMIN'] }
                 },
 

@@ -14,6 +14,49 @@ const model = ref([
         ]
     },
     {
+        label: 'Sinh viên',
+        icon: 'pi pi-fw pi-user',
+        items: [
+            {
+                label: 'Dashboard SV',
+                icon: 'pi pi-fw pi-th-large',
+                to: '/student/dashboard'
+            },
+            {
+                label: 'Chứng chỉ',
+                icon: 'pi pi-fw pi-id-card',
+                to: '/student/certificates'
+            }
+        ]
+    },
+    {
+        label: 'Giáo viên',
+        icon: 'pi pi-fw pi-briefcase',
+        items: [
+            {
+                label: 'Dashboard GV',
+                icon: 'pi pi-fw pi-th-large',
+                to: '/teacher/dashboard'
+            }
+        ]
+    },
+    {
+        label: 'Quản trị',
+        icon: 'pi pi-fw pi-cog',
+        items: [
+            {
+                label: 'Dashboard Admin',
+                icon: 'pi pi-fw pi-th-large',
+                to: '/admin/dashboard'
+            },
+            {
+                label: 'Quản lý Users',
+                icon: 'pi pi-fw pi-users',
+                to: '/admin/users'
+            }
+        ]
+    },
+    {
         label: 'UI Components',
         path: '/uikit',
         items: [
@@ -159,83 +202,6 @@ const model = ref([
                 label: 'Empty',
                 icon: 'pi pi-fw pi-circle-off',
                 to: '/pages/empty'
-            }
-        ]
-    },
-    {
-        label: 'Hierarchy',
-        icon: 'pi pi-fw pi-align-left',
-        path: '/hierarchy',
-        items: [
-            {
-                label: 'Submenu 1',
-                icon: 'pi pi-fw pi-align-left',
-                path: '/submenu_1',
-                items: [
-                    {
-                        label: 'Submenu 1.1',
-                        icon: 'pi pi-fw pi-align-left',
-                        path: '/submenu_1_1',
-                        items: [
-                            {
-                                label: 'Submenu 1.1.1',
-                                icon: 'pi pi-fw pi-align-left'
-                            },
-                            {
-                                label: 'Submenu 1.1.2',
-                                icon: 'pi pi-fw pi-align-left'
-                            },
-                            {
-                                label: 'Submenu 1.1.3',
-                                icon: 'pi pi-fw pi-align-left'
-                            }
-                        ]
-                    },
-                    {
-                        label: 'Submenu 1.2',
-                        icon: 'pi pi-fw pi-align-left',
-                        path: '/submenu_1_2',
-                        items: [
-                            {
-                                label: 'Submenu 1.2.1',
-                                icon: 'pi pi-fw pi-align-left'
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                label: 'Submenu 2',
-                icon: 'pi pi-fw pi-align-left',
-                path: '/submenu_2',
-                items: [
-                    {
-                        label: 'Submenu 2.1',
-                        icon: 'pi pi-fw pi-align-left',
-                        path: '/submenu_2_1',
-                        items: [
-                            {
-                                label: 'Submenu 2.1.1',
-                                icon: 'pi pi-fw pi-align-left'
-                            },
-                            {
-                                label: 'Submenu 2.1.2',
-                                icon: 'pi pi-fw pi-align-left'
-                            }
-                        ]
-                    },
-                    {
-                        label: 'Submenu 2.2',
-                        icon: 'pi pi-fw pi-align-left',
-                        path: '/submenu_2_2',
-                        items: [
-                            {
-                                label: 'Submenu 2.2.1',
-                                icon: 'pi pi-fw pi-align-left'
-                            }
-                        ]
-                    }
-                ]
             }
         ]
     },

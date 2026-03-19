@@ -39,6 +39,10 @@ function goBack() {
     router.push({ name: 'classDetail', params: { id: route.params.classId } });
 }
 
+function viewSubmissions() {
+    router.push({ name: 'quizSubmissions', params: { classId: route.params.classId } });
+}
+
 function getStatusSeverity(status) {
     return status === 'published' ? 'success' : 'warn';
 }
@@ -101,7 +105,10 @@ async function handleSave({ data, action }) {
                     <h5 class="m-0">📝 QUẢN LÝ QUIZ</h5>
                 </template>
                 <template #end>
-                    <Button label="+ Tạo Quiz" icon="pi pi-plus" @click="openNewQuiz" />
+                    <div class="flex gap-2">
+                        <Button label="Bài nộp" icon="pi pi-list" severity="secondary" outlined @click="viewSubmissions" />
+                        <Button label="+ Tạo Quiz" icon="pi pi-plus" @click="openNewQuiz" />
+                    </div>
                 </template>
             </Toolbar>
 

@@ -4,8 +4,10 @@ import StatsCard from '@/components/shared/StatsCard.vue';
 import { useStudent } from '@/composables/useStudent';
 import { useAuth } from '@/composables/useAuth';
 import { onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 
 const { user } = useAuth();
+const router = useRouter();
 const { courses, inProgressCourses, completedCourses, loading, fetchCourses } = useStudent();
 
 // Mock data for FE-only testing (remove when integrating with BE)
@@ -91,6 +93,20 @@ onMounted(async () => {
         </div>
         <div class="col-span-12 lg:col-span-6 xl:col-span-3">
             <StatsCard title="Hoàn thành" :value="completedCourses.length" icon="pi pi-check-circle" iconBgColor="green" subtitle="Khóa học đã hoàn thành" />
+        </div>
+        <div class="col-span-12 lg:col-span-6 xl:col-span-3">
+            <div class="card mb-0 cursor-pointer hover:shadow-lg transition-shadow" @click="router.push({ name: 'studentCertificates' })">
+                <div class="flex justify-between mb-4">
+                    <div>
+                        <span class="block text-muted-color font-medium mb-4">Chứng chỉ</span>
+                        <div class="text-surface-900 dark:text-surface-0 font-medium text-xl">{{ completedCourses.length }}</div>
+                    </div>
+                    <div class="flex items-center justify-center rounded-border bg-purple-100 dark:bg-purple-400/10" style="width: 2.5rem; height: 2.5rem">
+                        <i class="pi pi-id-card text-purple-500 text-xl!"></i>
+                    </div>
+                </div>
+                <span class="text-primary text-sm font-medium cursor-pointer">Xem tất cả →</span>
+            </div>
         </div>
 
         <!-- In Progress Courses -->
