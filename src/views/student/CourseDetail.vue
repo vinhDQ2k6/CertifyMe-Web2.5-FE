@@ -118,9 +118,7 @@ function handleVerify() {
                         <span class="text-muted-color">Lớp: {{ currentCourse.courseCode }} | GV: {{ currentCourse.teacherName }}</span>
                     </div>
                 </div>
-                <div class="text-muted-color text-sm">
-                    📅 {{ currentCourse.startDate }} - {{ currentCourse.endDate }}
-                </div>
+                <div class="text-muted-color text-sm">📅 {{ currentCourse.startDate }} - {{ currentCourse.endDate }}</div>
             </div>
 
             <!-- Progress Section -->

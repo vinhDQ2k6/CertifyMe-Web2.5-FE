@@ -1,22 +1,20 @@
 <script setup>
 import { useAuth } from '@/composables/useAuth';
-import { useRouter } from 'vue-router';
+import { ref } from 'vue';
 
-const router = useRouter();
-const { login, loading, userRole } = useAuth();
+const { redirectToLogin, loading } = useAuth();
 
-async function handleGoogleLogin() {
-    try {
-        await login();
-        if (userRole.value === 'admin') {
-            router.push({ name: 'adminDashboard' });
-        } else if (userRole.value === 'teacher') {
-            router.push({ name: 'teacherDashboard' });
-        } else {
-            router.push({ name: 'studentDashboard' });
-        }
-    } catch (error) {
-        console.error('Login failed:', error);
+const selectedRole = ref(null);
+
+const roleOptions = [
+    { label: 'Học sinh', value: 'STUDENT' },
+    { label: 'Giáo viên', value: 'TEACHER' },
+    { label: 'Quản trị viên', value: 'ADMIN' }
+];
+
+function handleGoogleLogin() {
+    if (selectedRole.value) {
+        redirectToLogin(selectedRole.value);
     }
 }
 </script>
@@ -40,7 +38,11 @@ async function handleGoogleLogin() {
                     </div>
 
                     <div class="flex flex-col items-center gap-4">
-                        <Button label="Đăng nhập với Google" icon="pi pi-google" class="w-full md:w-[30rem]" :loading="loading" @click="handleGoogleLogin" />
+                        <div class="w-full md:w-[30rem]">
+                            <label class="block text-sm font-medium text-surface-900 dark:text-surface-0 mb-2"> Chọn vai trò </label>
+                            <Dropdown v-model="selectedRole" :options="roleOptions" option-label="label" option-value="value" placeholder="Vui lòng chọn vai trò" class="w-full" />
+                        </div>
+                        <Button label="Đăng nhập với Google" icon="pi pi-google" class="w-full md:w-[30rem]" :loading="loading" :disabled="!selectedRole" @click="handleGoogleLogin" />
                         <span class="text-muted-color text-sm">Chỉ hỗ trợ email @fpt.edu.vn</span>
                     </div>
                 </div>

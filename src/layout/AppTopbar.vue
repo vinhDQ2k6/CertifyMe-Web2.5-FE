@@ -1,8 +1,32 @@
 <script setup>
 import { useLayout } from '@/layout/composables/layout';
+import { useAuth } from '@/composables/useAuth';
+import { onMounted, ref } from 'vue';
 import AppConfigurator from './AppConfigurator.vue';
 
 const { toggleMenu, toggleDarkMode, isDarkTheme } = useLayout();
+const { user, isAuthenticated, userRole, logout, fetchCurrentUser } = useAuth();
+
+const profileMenuVisible = ref(false);
+
+const toggleProfileMenu = () => {
+    profileMenuVisible.value = !profileMenuVisible.value;
+};
+
+const handleLogout = async () => {
+    profileMenuVisible.value = false;
+    await logout();
+};
+
+onMounted(async () => {
+    if (isAuthenticated.value) {
+        try {
+            await fetchCurrentUser();
+        } catch (err) {
+            console.error('Failed to fetch user profile:', err);
+        }
+    }
+});
 </script>
 
 <template>
@@ -68,12 +92,109 @@ const { toggleMenu, toggleDarkMode, isDarkTheme } = useLayout();
                         <i class="pi pi-inbox"></i>
                         <span>Messages</span>
                     </button>
-                    <button type="button" class="layout-topbar-action">
-                        <i class="pi pi-user"></i>
-                        <span>Profile</span>
-                    </button>
+
+                    <!-- Profile button with avatar and dropdown -->
+                    <div class="relative">
+                        <button type="button" class="layout-topbar-action" :aria-expanded="profileMenuVisible" aria-haspopup="true" @click="toggleProfileMenu">
+                            <img v-if="user?.avatarUrl" :src="user.avatarUrl" :alt="user.fullName || 'Profile'" class="profile-avatar" />
+                            <i v-else class="pi pi-user"></i>
+                            <span>Profile</span>
+                        </button>
+
+                        <div v-if="profileMenuVisible" class="profile-dropdown" role="menu" @keydown.escape="profileMenuVisible = false">
+                            <div v-if="user" class="profile-dropdown-header">
+                                <img v-if="user.avatarUrl" :src="user.avatarUrl" :alt="user.fullName" class="profile-dropdown-avatar" />
+                                <div class="profile-dropdown-info">
+                                    <span class="profile-dropdown-name">{{ user.fullName || user.email }}</span>
+                                    <span class="profile-dropdown-role">{{ userRole }}</span>
+                                </div>
+                            </div>
+                            <div class="profile-dropdown-divider"></div>
+                            <button type="button" class="profile-dropdown-item" role="menuitem" @click="handleLogout">
+                                <i class="pi pi-sign-out"></i>
+                                <span>Đăng xuất</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </template>
+
+<style scoped>
+.profile-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.profile-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    min-width: 240px;
+    background: var(--surface-overlay);
+    border: 1px solid var(--surface-border);
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    z-index: 1000;
+    padding: 0.5rem 0;
+    margin-top: 0.5rem;
+}
+
+.profile-dropdown-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+}
+
+.profile-dropdown-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.profile-dropdown-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.profile-dropdown-name {
+    font-weight: 600;
+    color: var(--text-color);
+    font-size: 0.875rem;
+}
+
+.profile-dropdown-role {
+    font-size: 0.75rem;
+    color: var(--text-color-secondary);
+}
+
+.profile-dropdown-divider {
+    height: 1px;
+    background: var(--surface-border);
+    margin: 0.25rem 0;
+}
+
+.profile-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.625rem 1rem;
+    border: none;
+    background: transparent;
+    color: var(--text-color);
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: background-color 0.2s;
+}
+
+.profile-dropdown-item:hover {
+    background: var(--surface-hover);
+}
+</style>

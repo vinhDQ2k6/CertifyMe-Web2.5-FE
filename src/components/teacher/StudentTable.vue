@@ -51,9 +51,7 @@ function getStatusLabel(status) {
         <Column field="name" header="Họ tên" sortable style="min-width: 12rem"></Column>
         <Column field="email" header="Email" sortable style="min-width: 14rem"></Column>
         <Column header="Tiến độ" style="min-width: 8rem">
-            <template #body="slotProps">
-                {{ slotProps.data.completedQuizzes }}/{{ slotProps.data.totalQuizzes }} quiz
-            </template>
+            <template #body="slotProps"> {{ slotProps.data.completedQuizzes }}/{{ slotProps.data.totalQuizzes }} quiz </template>
         </Column>
         <Column header="Trạng thái" style="min-width: 10rem">
             <template #body="slotProps">
