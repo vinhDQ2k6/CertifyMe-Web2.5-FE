@@ -46,13 +46,13 @@ const router = createRouter({
                     path: '/student/dashboard',
                     name: 'studentDashboard',
                     component: () => import('@/views/student/StudentDashboard.vue'),
-                    meta: { requiresAuth: true, roles: ['STUDENT'] }
+                    meta: { requiresAuth: false, roles: ['STUDENT'] }
                 },
                 {
                     path: '/student/course/:id',
                     name: 'courseDetail',
                     component: () => import('@/views/student/CourseDetail.vue'),
-                    meta: { requiresAuth: true, roles: ['STUDENT'] }
+                    meta: { requiresAuth: false, roles: ['STUDENT'] }
                 },
 
                 // Teacher routes
@@ -60,19 +60,19 @@ const router = createRouter({
                     path: '/teacher/dashboard',
                     name: 'teacherDashboard',
                     component: () => import('@/views/teacher/TeacherDashboard.vue'),
-                    meta: { requiresAuth: true, roles: ['TEACHER'] }
+                    meta: { requiresAuth: false, roles: ['TEACHER'] }
                 },
                 {
                     path: '/teacher/class/:id',
                     name: 'classDetail',
                     component: () => import('@/views/teacher/ClassDetail.vue'),
-                    meta: { requiresAuth: true, roles: ['TEACHER'] }
+                    meta: { requiresAuth: false, roles: ['TEACHER'] }
                 },
                 {
                     path: '/teacher/quiz/:classId',
                     name: 'quizManagement',
                     component: () => import('@/views/teacher/QuizManagement.vue'),
-                    meta: { requiresAuth: true, roles: ['TEACHER'] }
+                    meta: { requiresAuth: false, roles: ['TEACHER'] }
                 },
 
                 // Admin routes
@@ -80,13 +80,13 @@ const router = createRouter({
                     path: '/admin/dashboard',
                     name: 'adminDashboard',
                     component: () => import('@/views/admin/AdminDashboard.vue'),
-                    meta: { requiresAuth: true, roles: ['ADMIN'] }
+                    meta: { requiresAuth: false, roles: ['ADMIN'] }
                 },
                 {
                     path: '/admin/certificate/:id',
                     name: 'certificateDetail',
                     component: () => import('@/views/admin/CertificateManagement.vue'),
-                    meta: { requiresAuth: true, roles: ['ADMIN'] }
+                    meta: { requiresAuth: false, roles: ['ADMIN'] }
                 },
 
                 // Template routes (kept for reference/development)
