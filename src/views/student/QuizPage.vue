@@ -2,11 +2,13 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import QuizService from '@/services/QuizService';
+import { useErrorHandler } from '@/composables/useErrorHandler';
 import { useToast } from 'primevue/usetoast';
 
 const route = useRoute();
 const router = useRouter();
 const toast = useToast();
+const { handleError } = useErrorHandler();
 
 const quiz = ref(null);
 const loading = ref(false);
@@ -18,56 +20,10 @@ const timerInterval = ref(null);
 const showResult = ref(false);
 const result = ref(null);
 
-// Mock data for FE-only testing (remove when integrating with BE)
-const mockQuiz = {
-    id: 'q5',
-    name: 'Lab 5: Collections Framework',
-    timeLimit: 30,
-    maxAttempts: 2,
-    passingScore: 5.0,
-    questions: [
-        {
-            id: 'qu1',
-            questionText: 'ArrayList trong Java là gì?',
-            questionType: 'MULTIPLE_CHOICE',
-            options: ['Một mảng có kích thước cố định', 'Một danh sách động có thể thay đổi kích thước', 'Một cấu trúc dữ liệu kiểu cây', 'Một kiểu dữ liệu nguyên thủy'],
-            points: 1
-        },
-        {
-            id: 'qu2',
-            questionText: 'HashMap trong Java lưu dữ liệu theo cặp nào?',
-            questionType: 'MULTIPLE_CHOICE',
-            options: ['Index - Value', 'Key - Value', 'Name - Type', 'Column - Row'],
-            points: 1
-        },
-        {
-            id: 'qu3',
-            questionText: 'Phương thức nào dùng để thêm phần tử vào cuối ArrayList?',
-            questionType: 'MULTIPLE_CHOICE',
-            options: ['insert()', 'push()', 'add()', 'append()'],
-            points: 1
-        },
-        {
-            id: 'qu4',
-            questionText: 'LinkedList khác ArrayList ở điểm nào?',
-            questionType: 'MULTIPLE_CHOICE',
-            options: ['LinkedList lưu ít phần tử hơn', 'LinkedList dùng nút liên kết, ArrayList dùng mảng', 'LinkedList không thể duyệt', 'Không có sự khác biệt'],
-            points: 1
-        },
-        {
-            id: 'qu5',
-            questionText: 'HashSet trong Java có cho phép phần tử trùng lặp không?',
-            questionType: 'MULTIPLE_CHOICE',
-            options: ['Có', 'Không', 'Tùy thuộc vào phiên bản Java', 'Chỉ cho phép trùng lặp một lần'],
-            points: 1
-        }
-    ]
-};
-
 const currentQuestion = computed(() => quiz.value?.questions[currentQuestionIndex.value]);
 const totalQuestions = computed(() => quiz.value?.questions?.length || 0);
 const answeredCount = computed(() => Object.keys(answers.value).length);
-const progressPercent = computed(() => totalQuestions.value > 0 ? Math.round((answeredCount.value / totalQuestions.value) * 100) : 0);
+const progressPercent = computed(() => (totalQuestions.value > 0 ? Math.round((answeredCount.value / totalQuestions.value) * 100) : 0));
 const isLastQuestion = computed(() => currentQuestionIndex.value === totalQuestions.value - 1);
 const isFirstQuestion = computed(() => currentQuestionIndex.value === 0);
 
@@ -105,8 +61,8 @@ onMounted(async () => {
     try {
         const data = await QuizService.getQuizDetail(route.params.quizId);
         quiz.value = data;
-    } catch {
-        quiz.value = mockQuiz;
+    } catch (err) {
+        handleError(err, 'Tải đề thi');
     } finally {
         loading.value = false;
         if (quiz.value?.timeLimit) {
@@ -135,10 +91,6 @@ function jumpToQuestion(index) {
     currentQuestionIndex.value = index;
 }
 
-function getQuestionStatus(questionId) {
-    return answers.value[questionId] ? 'answered' : 'unanswered';
-}
-
 async function submitQuiz() {
     if (timerInterval.value) clearInterval(timerInterval.value);
     submitting.value = true;
@@ -146,19 +98,11 @@ async function submitQuiz() {
         const submissionAnswers = Object.entries(answers.value).map(([questionId, answer]) => ({ questionId, answer }));
         const res = await QuizService.submitQuizAnswers(route.params.quizId, submissionAnswers);
         result.value = res;
-    } catch {
-        // Mock result for FE-only testing
-        const answered = Object.keys(answers.value).length;
-        const mockScore = Math.round((answered / totalQuestions.value) * 10 * 10) / 10;
-        result.value = {
-            score: mockScore,
-            totalPoints: 10,
-            isPassed: mockScore >= (quiz.value?.passingScore || 5),
-            timeTaken: (quiz.value?.timeLimit || 30) * 60 - timeLeft.value
-        };
+        showResult.value = true;
+    } catch (err) {
+        handleError(err, 'Nộp bài');
     } finally {
         submitting.value = false;
-        showResult.value = true;
     }
 }
 
@@ -214,7 +158,6 @@ function goBack() {
 
         <!-- Quiz In Progress -->
         <div v-else-if="quiz">
-            <!-- Quiz Header -->
             <div class="card mb-4">
                 <div class="flex items-center justify-between flex-wrap gap-4">
                     <div>
@@ -228,7 +171,17 @@ function goBack() {
                             <ProgressBar :value="progressPercent" style="height: 0.4rem; width: 8rem" :showValue="false" />
                         </div>
                         <!-- Timer -->
-                        <div v-if="quiz.timeLimit" :class="['flex items-center gap-2 px-3 py-2 rounded-lg font-mono text-lg font-bold', timerSeverity === 'danger' ? 'bg-red-100 text-red-600 dark:bg-red-900/20 dark:text-red-400' : timerSeverity === 'warn' ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400' : 'bg-green-100 text-green-600 dark:bg-green-900/20 dark:text-green-400']">
+                        <div
+                            v-if="quiz.timeLimit"
+                            :class="[
+                                'flex items-center gap-2 px-3 py-2 rounded-lg font-mono text-lg font-bold',
+                                timerSeverity === 'danger'
+                                    ? 'bg-red-100 text-red-600 dark:bg-red-900/20 dark:text-red-400'
+                                    : timerSeverity === 'warn'
+                                      ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400'
+                                      : 'bg-green-100 text-green-600 dark:bg-green-900/20 dark:text-green-400'
+                            ]"
+                        >
                             <i class="pi pi-clock"></i>
                             {{ timeLeftFormatted }}
                         </div>
@@ -277,9 +230,7 @@ function goBack() {
                                 :key="optIdx"
                                 :class="[
                                     'flex items-center gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all',
-                                    answers[currentQuestion.id] === option
-                                        ? 'border-primary bg-primary/10 dark:bg-primary/20'
-                                        : 'border-surface-200 dark:border-surface-600 hover:border-primary/50 hover:bg-surface-50 dark:hover:bg-surface-700'
+                                    answers[currentQuestion.id] === option ? 'border-primary bg-primary/10 dark:bg-primary/20' : 'border-surface-200 dark:border-surface-600 hover:border-primary/50 hover:bg-surface-50 dark:hover:bg-surface-700'
                                 ]"
                                 @click="selectAnswer(currentQuestion.id, option)"
                             >
@@ -292,13 +243,7 @@ function goBack() {
 
                         <!-- Short Answer -->
                         <div v-else-if="currentQuestion.questionType === 'SHORT_ANSWER'">
-                            <Textarea
-                                :value="answers[currentQuestion.id] || ''"
-                                @input="selectAnswer(currentQuestion.id, $event.target.value)"
-                                rows="4"
-                                class="w-full"
-                                placeholder="Nhập câu trả lời của bạn..."
-                            />
+                            <Textarea :value="answers[currentQuestion.id] || ''" @input="selectAnswer(currentQuestion.id, $event.target.value)" rows="4" class="w-full" placeholder="Nhập câu trả lời của bạn..." />
                         </div>
 
                         <!-- Navigation Buttons -->
@@ -314,10 +259,19 @@ function goBack() {
             <!-- Submit Button (bottom) -->
             <div class="card mt-4">
                 <div class="flex items-center justify-between">
-                    <span class="text-muted-color">Đã trả lời: <strong>{{ answeredCount }}/{{ totalQuestions }}</strong></span>
+                    <span class="text-muted-color"
+                        >Đã trả lời: <strong>{{ answeredCount }}/{{ totalQuestions }}</strong></span
+                    >
                     <Button label="Nộp bài ngay" icon="pi pi-send" severity="success" :loading="submitting" @click="confirmSubmit" />
                 </div>
             </div>
+        </div>
+
+        <!-- Error / Not Found -->
+        <div v-else class="card text-center py-12">
+            <div class="text-5xl mb-4">📭</div>
+            <p class="text-muted-color">Không tìm thấy đề thi.</p>
+            <Button label="Quay lại" class="mt-4" @click="goBack" />
         </div>
     </div>
 </template>

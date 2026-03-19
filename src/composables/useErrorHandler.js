@@ -8,23 +8,22 @@ export function useErrorHandler() {
     function handleError(err, context = '') {
         let message = 'Đã xảy ra lỗi không xác định';
 
-        if (err?.response) {
-            const status = err.response.status;
-            const data = err.response.data;
+        // Resolve status from either ApiError (err.statusCode) or raw Axios error (err.response.status)
+        const status = err?.statusCode ?? err?.response?.status;
+        const data = err?.response?.data;
 
-            if (status === 400) {
-                message = data?.message || 'Dữ liệu không hợp lệ';
-            } else if (status === 401) {
-                message = 'Phiên đăng nhập đã hết hạn';
-            } else if (status === 403) {
-                message = 'Bạn không có quyền thực hiện thao tác này';
-            } else if (status === 404) {
-                message = data?.message || 'Không tìm thấy dữ liệu';
-            } else if (status === 409) {
-                message = data?.message || 'Dữ liệu đã tồn tại';
-            } else if (status >= 500) {
-                message = 'Lỗi máy chủ, vui lòng thử lại sau';
-            }
+        if (status === 400) {
+            message = data?.message || err?.message || 'Dữ liệu không hợp lệ';
+        } else if (status === 401) {
+            message = 'Phiên đăng nhập đã hết hạn';
+        } else if (status === 403) {
+            message = 'Bạn không có quyền thực hiện thao tác này';
+        } else if (status === 404) {
+            message = data?.message || err?.message || 'Không tìm thấy dữ liệu';
+        } else if (status === 409) {
+            message = data?.message || err?.message || 'Dữ liệu đã tồn tại';
+        } else if (status >= 500) {
+            message = 'Lỗi máy chủ, vui lòng thử lại sau';
         } else if (err?.message) {
             message = err.message;
         }

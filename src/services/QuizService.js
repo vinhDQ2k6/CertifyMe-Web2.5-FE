@@ -31,6 +31,16 @@ const QuizService = {
 
     async getStudentQuizResults(studentId, courseId) {
         return await fetchResource(`/student/${studentId}/results`, { params: { courseId } });
+    },
+
+    // Lấy danh sách quiz theo classId (dùng cho giáo viên)
+    async getQuizzesForClass(classId) {
+        return await fetchResource(`/classes/${classId}/quizzes`);
+    },
+
+    // Lấy danh sách bài nộp của một quiz
+    async getQuizSubmissions(quizId) {
+        return await fetchResource(`/quizzes/${quizId}/submissions`);
     }
 };
 

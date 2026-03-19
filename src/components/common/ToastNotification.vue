@@ -44,11 +44,7 @@ const severityTextMap = {
 <template>
     <div class="fixed top-4 right-4 z-50 flex flex-col gap-2 min-w-72 max-w-sm">
         <TransitionGroup name="toast">
-            <div
-                v-for="toast in toasts"
-                :key="toast.id"
-                :class="['flex items-start gap-3 p-4 rounded-lg border-l-4 shadow-md', severityBgMap[toast.severity] || severityBgMap.info]"
-            >
+            <div v-for="toast in toasts" :key="toast.id" :class="['flex items-start gap-3 p-4 rounded-lg border-l-4 shadow-md', severityBgMap[toast.severity] || severityBgMap.info]">
                 <i :class="[severityIconMap[toast.severity] || severityIconMap.info, 'text-lg mt-0.5', severityTextMap[toast.severity] || severityTextMap.info]"></i>
                 <div class="flex-1 min-w-0">
                     <div v-if="toast.summary" :class="['font-semibold text-sm', severityTextMap[toast.severity]]">{{ toast.summary }}</div>

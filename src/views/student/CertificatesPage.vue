@@ -3,61 +3,24 @@ import CertificateCard from '@/components/student/CertificateCard.vue';
 import BlockchainInfo from '@/components/shared/BlockchainInfo.vue';
 import { useStudent } from '@/composables/useStudent';
 import { useAuth } from '@/composables/useAuth';
+import { useErrorHandler } from '@/composables/useErrorHandler';
 import { onMounted, ref } from 'vue';
-import { useToast } from 'primevue/usetoast';
 import CertificateService from '@/services/CertificateService';
 
 const { user } = useAuth();
 const { certificates, loading, fetchCertificates } = useStudent();
-const toast = useToast();
+const { handleError, showSuccess } = useErrorHandler();
 
 const selectedCert = ref(null);
 const showBlockchainInfo = ref(false);
 const downloading = ref(false);
 const verifying = ref(false);
 
-// Mock data for FE-only testing (remove when integrating with BE)
-const mockCertificates = [
-    {
-        id: 'CERT-001',
-        studentName: 'Trần Văn B',
-        courseName: 'Lập trình Python',
-        courseCode: 'SD18101',
-        grade: 9.2,
-        completionDate: '2025-12-01',
-        verificationHash: '0x7a8b9c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b',
-        blockchainInfo: {
-            hash: '0x7a8b9c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b',
-            block: '12345678',
-            txHash: '0x999888777666555444333222111000aaabbbccc',
-            contract: '0xABC123DEF456789012345678901234567890ABCD'
-        },
-        status: 'issued'
-    },
-    {
-        id: 'CERT-002',
-        studentName: 'Trần Văn B',
-        courseName: 'Cơ sở dữ liệu',
-        courseCode: 'SD18102',
-        grade: 8.8,
-        completionDate: '2025-12-28',
-        verificationHash: '0xaabbcc1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b',
-        blockchainInfo: {
-            hash: '0xaabbcc1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b',
-            block: '12349000',
-            txHash: '0x111222333444555666777888999000aaabbbccc',
-            contract: '0xABC123DEF456789012345678901234567890ABCD'
-        },
-        status: 'issued'
-    }
-];
-
 onMounted(async () => {
-    if (user.value?.id) {
-        await fetchCertificates(user.value.id);
-    }
-    if (certificates.value.length === 0) {
-        certificates.value = mockCertificates;
+    try {
+        await fetchCertificates(user.value?.id);
+    } catch (err) {
+        handleError(err, 'Tải danh sách chứng chỉ');
     }
 });
 
@@ -70,9 +33,9 @@ async function handleDownload(cert) {
     downloading.value = true;
     try {
         await CertificateService.downloadCertificatePDF(cert.id);
-        toast.add({ severity: 'success', summary: 'Thành công', detail: 'Đã tải xuống chứng chỉ PDF', life: 3000 });
-    } catch {
-        toast.add({ severity: 'info', summary: 'Thông báo', detail: 'Tính năng tải PDF đang được phát triển', life: 3000 });
+        showSuccess('Thành công', 'Đã tải xuống chứng chỉ PDF');
+    } catch (err) {
+        handleError(err, 'Tải PDF chứng chỉ');
     } finally {
         downloading.value = false;
     }
@@ -83,10 +46,9 @@ async function handleVerify(cert) {
     try {
         await CertificateService.verifyCertificateOnChain(cert.id);
         showBlockchainInfo.value = true;
-        toast.add({ severity: 'success', summary: 'Xác minh thành công', detail: 'Chứng chỉ hợp lệ trên blockchain', life: 3000 });
-    } catch {
-        showBlockchainInfo.value = true;
-        toast.add({ severity: 'info', summary: 'Demo', detail: 'Hiển thị thông tin blockchain (mock)', life: 3000 });
+        showSuccess('Xác minh thành công', 'Chứng chỉ hợp lệ trên blockchain');
+    } catch (err) {
+        handleError(err, 'Xác minh blockchain');
     } finally {
         verifying.value = false;
     }
@@ -96,7 +58,7 @@ function handleShare(cert) {
     const url = `${window.location.origin}/verify/${cert.verificationHash}`;
     if (navigator.clipboard) {
         navigator.clipboard.writeText(url);
-        toast.add({ severity: 'success', summary: 'Đã sao chép', detail: 'Link xác minh đã được sao chép', life: 3000 });
+        showSuccess('Đã sao chép', 'Link xác minh đã được sao chép');
     }
 }
 
@@ -148,9 +110,7 @@ function formatDate(date) {
                             :key="cert.id"
                             :class="[
                                 'flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all',
-                                selectedCert?.id === cert.id
-                                    ? 'border-primary bg-primary/10 dark:bg-primary/20'
-                                    : 'border-surface-200 dark:border-surface-600 hover:border-primary/50'
+                                selectedCert?.id === cert.id ? 'border-primary bg-primary/10 dark:bg-primary/20' : 'border-surface-200 dark:border-surface-600 hover:border-primary/50'
                             ]"
                             @click="selectCertificate(cert)"
                         >

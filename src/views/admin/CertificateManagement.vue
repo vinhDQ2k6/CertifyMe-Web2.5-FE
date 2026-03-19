@@ -3,45 +3,25 @@ import CertificateDetail from '@/components/admin/CertificateDetail.vue';
 import BlockchainInfo from '@/components/shared/BlockchainInfo.vue';
 import RevokeDialog from '@/components/admin/RevokeDialog.vue';
 import CertificateService from '@/services/CertificateService';
+import { useErrorHandler } from '@/composables/useErrorHandler';
 import { useRoute, useRouter } from 'vue-router';
-import { useToast } from 'primevue/usetoast';
 import { onMounted, ref } from 'vue';
 
 const route = useRoute();
 const router = useRouter();
-const toast = useToast();
+const { handleError, showSuccess } = useErrorHandler();
 
 const certificate = ref(null);
 const loading = ref(false);
 const revokeDialogVisible = ref(false);
 const revokeLoading = ref(false);
 
-// Mock data for FE-only testing (remove when integrating with BE)
-const mockCertificate = {
-    id: route.params.id || 'CERT-156',
-    studentName: 'Nguyễn Văn An',
-    studentEmail: 'annv@fpt.edu.vn',
-    className: 'SD18301',
-    courseCode: 'Lập trình Java 6',
-    gradeAverage: 8.5,
-    issueDate: '2026-02-15',
-    status: 'issued',
-    blockchainHash: '0x7a8b9c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b',
-    blockchainInfo: {
-        hash: '0x7a8b9c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b',
-        block: '12345678',
-        txHash: '0x999888777666555444333222111000aaabbbccc',
-        contract: '0xABC123DEF456789012345678901234567890ABCD'
-    }
-};
-
 onMounted(async () => {
     loading.value = true;
     try {
         certificate.value = await CertificateService.getCertificateDetail(route.params.id);
-    } catch {
-        // Use mock data if API not available
-        certificate.value = mockCertificate;
+    } catch (err) {
+        handleError(err, 'Tải chi tiết bằng cấp');
     } finally {
         loading.value = false;
     }
@@ -61,9 +41,9 @@ async function handleRevoke({ reason }) {
         await CertificateService.revokeCertificate(route.params.id, reason);
         certificate.value.status = 'revoked';
         revokeDialogVisible.value = false;
-        toast.add({ severity: 'success', summary: 'Thành công', detail: 'Bằng đã được thu hồi', life: 3000 });
-    } catch (error) {
-        toast.add({ severity: 'error', summary: 'Lỗi', detail: 'Không thể thu hồi bằng', life: 3000 });
+        showSuccess('Thành công', 'Bằng đã được thu hồi');
+    } catch (err) {
+        handleError(err, 'Thu hồi bằng cấp');
     } finally {
         revokeLoading.value = false;
     }
@@ -79,7 +59,13 @@ async function handleRevoke({ reason }) {
             <ProgressSpinner />
         </div>
 
-        <div v-else-if="certificate">
+        <div v-else-if="!certificate" class="card text-center py-12">
+            <div class="text-4xl mb-3">📭</div>
+            <p class="text-muted-color">Không tìm thấy thông tin bằng cấp.</p>
+            <Button label="Quay lại" class="mt-4" @click="goBack" />
+        </div>
+
+        <div v-else>
             <h3 class="mb-4">🎓 CHI TIẾT BẰNG: {{ certificate.id }}</h3>
 
             <!-- Certificate Details -->

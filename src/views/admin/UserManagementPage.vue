@@ -1,10 +1,10 @@
 <script setup>
 import UserService from '@/services/UserService';
+import { useErrorHandler } from '@/composables/useErrorHandler';
 import { ref, computed, onMounted } from 'vue';
-import { useToast } from 'primevue/usetoast';
 import ConfirmModal from '@/components/common/ConfirmModal.vue';
 
-const toast = useToast();
+const { handleError, showSuccess } = useErrorHandler();
 
 const users = ref([]);
 const loading = ref(false);
@@ -12,18 +12,6 @@ const searchQuery = ref('');
 const selectedRole = ref('');
 const selectedStatus = ref('');
 const confirmDialog = ref({ visible: false, userId: null, action: '', title: '', message: '', loading: false });
-
-// Mock data for FE-only testing (remove when integrating with BE)
-const mockUsers = [
-    { id: 'u1', name: 'Nguyễn Văn Admin', email: 'admin@fpt.edu.vn', role: 'ADMIN', isActive: true, createdAt: '2025-01-01', lastLoginAt: '2026-03-18T10:00:00' },
-    { id: 'u2', name: 'Trần Thị Giảng', email: 'giangtt@fpt.edu.vn', role: 'TEACHER', isActive: true, createdAt: '2025-02-01', lastLoginAt: '2026-03-17T09:00:00', classCount: 3 },
-    { id: 'u3', name: 'Lê Văn Học', email: 'hoclv@fpt.edu.vn', role: 'TEACHER', isActive: true, createdAt: '2025-02-15', lastLoginAt: '2026-03-16T08:00:00', classCount: 2 },
-    { id: 'u4', name: 'Phạm Minh Sinh', email: 'sinhpm@fpt.edu.vn', role: 'STUDENT', isActive: true, createdAt: '2025-09-01', lastLoginAt: '2026-03-18T14:00:00', enrollmentCount: 3 },
-    { id: 'u5', name: 'Hoàng Thị Viên', email: 'vienht@fpt.edu.vn', role: 'STUDENT', isActive: true, createdAt: '2025-09-01', lastLoginAt: '2026-03-15T11:00:00', enrollmentCount: 2 },
-    { id: 'u6', name: 'Vũ Đình Quân', email: 'quanvd@fpt.edu.vn', role: 'STUDENT', isActive: false, createdAt: '2025-09-01', lastLoginAt: '2025-12-01T09:00:00', enrollmentCount: 1 },
-    { id: 'u7', name: 'Đặng Thị Hương', email: 'huongdt@fpt.edu.vn', role: 'STUDENT', isActive: true, createdAt: '2025-09-15', lastLoginAt: '2026-03-14T16:00:00', enrollmentCount: 4 },
-    { id: 'u8', name: 'Bùi Văn Phong', email: 'phongbv@fpt.edu.vn', role: 'TEACHER', isActive: false, createdAt: '2024-12-01', lastLoginAt: '2026-01-10T10:00:00', classCount: 1 }
-];
 
 const filteredUsers = computed(() => {
     return users.value.filter((u) => {
@@ -46,9 +34,9 @@ onMounted(async () => {
     loading.value = true;
     try {
         const data = await UserService.getUsers();
-        users.value = Array.isArray(data) ? data : (data?.content || data?.data || []);
-    } catch {
-        users.value = mockUsers;
+        users.value = Array.isArray(data) ? data : data?.content || data?.data || [];
+    } catch (err) {
+        handleError(err, 'Tải danh sách người dùng');
     } finally {
         loading.value = false;
     }
@@ -57,22 +45,6 @@ onMounted(async () => {
 function formatDate(dateStr) {
     if (!dateStr) return 'Chưa đăng nhập';
     return new Date(dateStr).toLocaleDateString('vi-VN');
-}
-
-function getRoleSeverity(role) {
-    switch (role) {
-        case 'ADMIN': return 'danger';
-        case 'TEACHER': return 'warn';
-        default: return 'info';
-    }
-}
-
-function getRoleLabel(role) {
-    switch (role) {
-        case 'ADMIN': return '🔴 Admin';
-        case 'TEACHER': return '🟡 Giáo viên';
-        default: return '🔵 Sinh viên';
-    }
 }
 
 function openToggleStatus(user) {
@@ -97,10 +69,10 @@ async function handleConfirm() {
             await UserService.updateUserStatus(confirmDialog.value.userId, confirmDialog.value.newStatus);
             const user = users.value.find((u) => u.id === confirmDialog.value.userId);
             if (user) user.isActive = confirmDialog.value.newStatus;
-            toast.add({ severity: 'success', summary: 'Thành công', detail: `Đã cập nhật trạng thái tài khoản`, life: 3000 });
+            showSuccess('Thành công', 'Đã cập nhật trạng thái tài khoản');
         }
-    } catch {
-        toast.add({ severity: 'error', summary: 'Lỗi', detail: 'Không thể cập nhật tài khoản', life: 3000 });
+    } catch (err) {
+        handleError(err, 'Cập nhật tài khoản');
     } finally {
         confirmDialog.value.loading = false;
         confirmDialog.value.visible = false;
@@ -111,9 +83,9 @@ async function changeRole(user, newRole) {
     try {
         await UserService.updateUserRole(user.id, newRole);
         user.role = newRole;
-        toast.add({ severity: 'success', summary: 'Thành công', detail: `Đã đổi role thành ${newRole}`, life: 3000 });
-    } catch {
-        toast.add({ severity: 'error', summary: 'Lỗi', detail: 'Không thể đổi role', life: 3000 });
+        showSuccess('Thành công', `Đã đổi role thành ${newRole}`);
+    } catch (err) {
+        handleError(err, 'Đổi role');
     }
 }
 
@@ -228,12 +200,7 @@ const availableRoles = ['STUDENT', 'TEACHER', 'ADMIN'];
                     </Column>
                     <Column header="Role" style="min-width: 10rem">
                         <template #body="slotProps">
-                            <Select
-                                :modelValue="slotProps.data.role"
-                                :options="availableRoles"
-                                size="small"
-                                @update:modelValue="changeRole(slotProps.data, $event)"
-                            />
+                            <Select :modelValue="slotProps.data.role" :options="availableRoles" size="small" @update:modelValue="changeRole(slotProps.data, $event)" />
                         </template>
                     </Column>
                     <Column header="Trạng thái" style="min-width: 9rem">
@@ -261,9 +228,7 @@ const availableRoles = ['STUDENT', 'TEACHER', 'ADMIN'];
                     </Column>
                 </DataTable>
 
-                <div v-if="!loading && filteredUsers.length === 0" class="text-center text-muted-color py-8">
-                    Không tìm thấy người dùng nào
-                </div>
+                <div v-if="!loading && filteredUsers.length === 0" class="text-center text-muted-color py-8">Không tìm thấy người dùng nào</div>
             </div>
         </div>
 

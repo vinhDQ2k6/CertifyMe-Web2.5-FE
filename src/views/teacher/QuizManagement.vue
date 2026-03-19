@@ -1,37 +1,24 @@
 <script setup>
 import QuizForm from '@/components/teacher/QuizForm.vue';
 import { useTeacher } from '@/composables/useTeacher';
+import { useErrorHandler } from '@/composables/useErrorHandler';
 import QuizService from '@/services/QuizService';
 import { useRoute, useRouter } from 'vue-router';
 import { onMounted, ref } from 'vue';
-import { useToast } from 'primevue/usetoast';
 
 const route = useRoute();
 const router = useRouter();
-const toast = useToast();
-const { quizzes, loading, fetchQuizzes } = useTeacher();
+const { quizzes, loading } = useTeacher();
+const { handleError, showSuccess } = useErrorHandler();
 
 const showForm = ref(false);
 const editingQuiz = ref(null);
 
-// Mock data for FE-only testing (remove when integrating with BE)
-const mockQuizzes = [
-    { id: 'q1', name: 'Lab 1: Biến và kiểu dữ liệu', questionsCount: 10, passingScore: 5.0, status: 'published' },
-    { id: 'q2', name: 'Lab 2: Vòng lặp và mảng', questionsCount: 10, passingScore: 5.0, status: 'published' },
-    { id: 'q3', name: 'Lab 3: OOP cơ bản', questionsCount: 10, passingScore: 5.0, status: 'published' },
-    { id: 'q4', name: 'Lab 4: Kế thừa và đa hình', questionsCount: 10, passingScore: 5.0, status: 'published' },
-    { id: 'q5', name: 'Lab 5: Collections Framework', questionsCount: 8, passingScore: 5.0, status: 'draft' }
-];
-
 onMounted(async () => {
     try {
-        await fetchQuizzes(route.params.classId);
-    } catch {
-        // ignore API errors in FE-only mode
-    }
-    // Use mock data if no quizzes loaded from API
-    if (quizzes.value.length === 0) {
-        quizzes.value = mockQuizzes;
+        quizzes.value = await QuizService.getQuizzesForClass(route.params.classId);
+    } catch (err) {
+        handleError(err, 'Tải danh sách quiz');
     }
 });
 
@@ -65,9 +52,9 @@ async function handleDelete(quizId) {
     try {
         await QuizService.deleteQuiz(quizId);
         quizzes.value = quizzes.value.filter((q) => q.id !== quizId);
-        toast.add({ severity: 'success', summary: 'Thành công', detail: 'Đã xóa quiz', life: 3000 });
-    } catch (error) {
-        toast.add({ severity: 'error', summary: 'Lỗi', detail: 'Không thể xóa quiz', life: 3000 });
+        showSuccess('Thành công', 'Đã xóa quiz');
+    } catch (err) {
+        handleError(err, 'Xóa quiz');
     }
 }
 
@@ -85,10 +72,10 @@ async function handleSave({ data, action }) {
             }
         }
         showForm.value = false;
-        await fetchQuizzes(route.params.classId);
-        toast.add({ severity: 'success', summary: 'Thành công', detail: action === 'publish' ? 'Quiz đã được publish' : 'Quiz đã được lưu', life: 3000 });
-    } catch (error) {
-        toast.add({ severity: 'error', summary: 'Lỗi', detail: 'Không thể lưu quiz', life: 3000 });
+        quizzes.value = await QuizService.getQuizzesForClass(route.params.classId);
+        showSuccess('Thành công', action === 'publish' ? 'Quiz đã được publish' : 'Quiz đã được lưu');
+    } catch (err) {
+        handleError(err, 'Lưu quiz');
     }
 }
 </script>
