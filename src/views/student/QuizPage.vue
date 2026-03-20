@@ -70,13 +70,18 @@ onMounted(async () => {
         studentId = userInfo.userId;
 
         const data = await QuizService.getQuizDetail(route.params.quizId);
-        quiz.value = data;
+        // Normalize API response: convert optionA/B/C/D to options array
+        const normalizedQuestions = (data.questions || []).map((q) => ({
+            ...q,
+            options: ['A', 'B', 'C', 'D'].map((letter) => q[`option${letter}`])
+        }));
+        quiz.value = { ...data, questions: normalizedQuestions };
     } catch (err) {
         handleError(err, 'Tải đề thi');
     } finally {
         loading.value = false;
-        if (quiz.value?.timeLimit) {
-            startTimer(quiz.value.timeLimit);
+        if (quiz.value?.duration) {
+            startTimer(quiz.value.duration);
         }
     }
 });
@@ -108,7 +113,12 @@ async function submitQuiz() {
         if (!studentId) {
             throw new Error('Student ID not found');
         }
-        const submissionAnswers = Object.entries(answers.value).map(([questionId, answer]) => ({ questionId, answer }));
+        // Convert answers format: map answer value back to letter (A/B/C/D)
+        const submissionAnswers = Object.entries(answers.value).map(([questionId, answer]) => {
+            const question = quiz.value.questions.find((q) => q.questionId === parseInt(questionId) || q.id === questionId);
+            const letter = question ? ['A', 'B', 'C', 'D'][question.options.indexOf(answer)] : null;
+            return { questionId: parseInt(questionId), selectedOption: letter || answer };
+        });
         const res = await QuizService.submitQuizAnswers(route.params.quizId, studentId, submissionAnswers);
         result.value = res;
         showResult.value = true;
@@ -143,12 +153,12 @@ function goBack() {
         <!-- Quiz Result -->
         <div v-else-if="showResult && result" class="max-w-2xl mx-auto">
             <div class="card text-center">
-                <div class="text-5xl mb-4">{{ result.isPassed ? '🎉' : '😔' }}</div>
-                <h3 class="text-2xl font-bold mb-2">{{ result.isPassed ? 'Chúc mừng! Bạn đã qua!' : 'Chưa đạt yêu cầu' }}</h3>
+                <div class="text-5xl mb-4">{{ result.status === 'PASSED' ? '🎉' : '😔' }}</div>
+                <h3 class="text-2xl font-bold mb-2">{{ result.status === 'PASSED' ? 'Chúc mừng! Bạn đã qua!' : 'Chưa đạt yêu cầu' }}</h3>
 
                 <div class="grid grid-cols-3 gap-4 my-6">
                     <div class="text-center">
-                        <div class="text-3xl font-bold text-primary">{{ result.score }}/{{ result.totalPoints }}</div>
+                        <div class="text-3xl font-bold text-primary">{{ result.score }}/{{ result.maxScore }}</div>
                         <div class="text-muted-color text-sm">Điểm số</div>
                     </div>
                     <div class="text-center">
@@ -156,12 +166,12 @@ function goBack() {
                         <div class="text-muted-color text-sm">Đã trả lời</div>
                     </div>
                     <div class="text-center">
-                        <div class="text-3xl font-bold">{{ Math.floor(result.timeTaken / 60) }}:{{ String(result.timeTaken % 60).padStart(2, '0') }}</div>
-                        <div class="text-muted-color text-sm">Thời gian làm</div>
+                        <div class="text-3xl font-bold">{{ result.submittedAt ? new Date(result.submittedAt).toLocaleTimeString('vi-VN') : '--' }}</div>
+                        <div class="text-muted-color text-sm">Thời gian nộp</div>
                     </div>
                 </div>
 
-                <Tag :value="result.isPassed ? '✅ ĐẠT' : '❌ CHƯA ĐẠT'" :severity="result.isPassed ? 'success' : 'danger'" class="text-lg px-4 py-2 mb-6" />
+                <Tag :value="result.status === 'PASSED' ? '✅ ĐẠT' : '❌ CHƯA ĐẠT'" :severity="result.status === 'PASSED' ? 'success' : 'danger'" class="text-lg px-4 py-2 mb-6" />
 
                 <div class="flex justify-center gap-3">
                     <Button label="Quay về khóa học" icon="pi pi-arrow-left" @click="goBack" />
@@ -174,7 +184,7 @@ function goBack() {
             <div class="card mb-4">
                 <div class="flex items-center justify-between flex-wrap gap-4">
                     <div>
-                        <h4 class="m-0 font-bold">📝 {{ quiz.name }}</h4>
+                        <h4 class="m-0 font-bold">📝 {{ quiz.quizName }}</h4>
                         <span class="text-muted-color text-sm">Câu {{ currentQuestionIndex + 1 }}/{{ totalQuestions }}</span>
                     </div>
                     <div class="flex items-center gap-4">
@@ -210,10 +220,10 @@ function goBack() {
                         <div class="grid grid-cols-5 gap-1">
                             <button
                                 v-for="(q, idx) in quiz.questions"
-                                :key="q.id"
+                                :key="q.questionId"
                                 :class="[
                                     'w-8 h-8 rounded text-sm font-medium transition-colors',
-                                    idx === currentQuestionIndex ? 'bg-primary text-white' : answers[q.id] ? 'bg-green-500 text-white' : 'bg-surface-100 dark:bg-surface-700 text-surface-700 dark:text-surface-200'
+                                    idx === currentQuestionIndex ? 'bg-primary text-white' : answers[q.questionId] ? 'bg-green-500 text-white' : 'bg-surface-100 dark:bg-surface-700 text-surface-700 dark:text-surface-200'
                                 ]"
                                 @click="jumpToQuestion(idx)"
                             >
@@ -243,12 +253,14 @@ function goBack() {
                                 :key="optIdx"
                                 :class="[
                                     'flex items-center gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all',
-                                    answers[currentQuestion.id] === option ? 'border-primary bg-primary/10 dark:bg-primary/20' : 'border-surface-200 dark:border-surface-600 hover:border-primary/50 hover:bg-surface-50 dark:hover:bg-surface-700'
+                                    answers[currentQuestion.questionId] === option
+                                        ? 'border-primary bg-primary/10 dark:bg-primary/20'
+                                        : 'border-surface-200 dark:border-surface-600 hover:border-primary/50 hover:bg-surface-50 dark:hover:bg-surface-700'
                                 ]"
-                                @click="selectAnswer(currentQuestion.id, option)"
+                                @click="selectAnswer(currentQuestion.questionId, option)"
                             >
-                                <span :class="['w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0', answers[currentQuestion.id] === option ? 'border-primary' : 'border-surface-400']">
-                                    <span v-if="answers[currentQuestion.id] === option" class="w-3 h-3 rounded-full bg-primary"></span>
+                                <span :class="['w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0', answers[currentQuestion.questionId] === option ? 'border-primary' : 'border-surface-400']">
+                                    <span v-if="answers[currentQuestion.questionId] === option" class="w-3 h-3 rounded-full bg-primary"></span>
                                 </span>
                                 <span>{{ option }}</span>
                             </div>
@@ -256,7 +268,7 @@ function goBack() {
 
                         <!-- Short Answer -->
                         <div v-else-if="currentQuestion.questionType === 'SHORT_ANSWER'">
-                            <Textarea :value="answers[currentQuestion.id] || ''" @input="selectAnswer(currentQuestion.id, $event.target.value)" rows="4" class="w-full" placeholder="Nhập câu trả lời của bạn..." />
+                            <Textarea :value="answers[currentQuestion.questionId] || ''" @input="selectAnswer(currentQuestion.questionId, $event.target.value)" rows="4" class="w-full" placeholder="Nhập câu trả lời của bạn..." />
                         </div>
 
                         <!-- Navigation Buttons -->
