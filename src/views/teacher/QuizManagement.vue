@@ -31,11 +31,11 @@ function viewSubmissions() {
 }
 
 function getStatusSeverity(status) {
-    return status === 'published' ? 'success' : 'warn';
+    return status === 'active' ? 'success' : 'warn';
 }
 
 function getStatusLabel(status) {
-    return status === 'published' ? '🟢 Published' : '📝 Draft';
+    return status === 'active' ? '🟢 Active' : '📝 Draft';
 }
 
 function openNewQuiz() {
@@ -51,7 +51,7 @@ function editQuiz(quiz) {
 async function handleDelete(quizId) {
     try {
         await QuizService.deleteQuiz(quizId);
-        quizzes.value = quizzes.value.filter((q) => q.id !== quizId);
+        quizzes.value = quizzes.value.filter((q) => q.quizId !== quizId);
         showSuccess('Thành công', 'Đã xóa quiz');
     } catch (err) {
         handleError(err, 'Xóa quiz');
@@ -61,14 +61,14 @@ async function handleDelete(quizId) {
 async function handleSave({ data, action }) {
     try {
         if (editingQuiz.value) {
-            await QuizService.updateQuiz(editingQuiz.value.id, data);
+            await QuizService.updateQuiz(editingQuiz.value.quizId, data);
             if (action === 'publish') {
-                await QuizService.publishQuiz(editingQuiz.value.id);
+                await QuizService.publishQuiz(editingQuiz.value.quizId);
             }
         } else {
             const quiz = await QuizService.createQuiz(route.params.classId, data);
             if (action === 'publish') {
-                await QuizService.publishQuiz(quiz.id);
+                await QuizService.publishQuiz(quiz.quizId);
             }
         }
         showForm.value = false;
@@ -100,10 +100,10 @@ async function handleSave({ data, action }) {
             </Toolbar>
 
             <DataTable :value="quizzes" :loading="loading" stripedRows>
-                <Column field="name" header="Tên quiz" sortable style="min-width: 14rem"></Column>
+                <Column field="quizName" header="Tên quiz" sortable style="min-width: 14rem"></Column>
                 <Column header="Số câu hỏi" style="min-width: 8rem">
                     <template #body="slotProps">
-                        {{ slotProps.data.questionsCount || 0 }}
+                        {{ slotProps.data.questionCount || 0 }}
                     </template>
                 </Column>
                 <Column header="Điểm qua" style="min-width: 8rem">
@@ -119,7 +119,7 @@ async function handleSave({ data, action }) {
                 <Column header="Hành động" style="min-width: 10rem">
                     <template #body="slotProps">
                         <Button icon="pi pi-pencil" outlined rounded class="mr-2" size="small" @click="editQuiz(slotProps.data)" />
-                        <Button icon="pi pi-trash" outlined rounded severity="danger" size="small" @click="handleDelete(slotProps.data.id)" />
+                        <Button icon="pi pi-trash" outlined rounded severity="danger" size="small" @click="handleDelete(slotProps.data.quizId)" />
                     </template>
                 </Column>
             </DataTable>
@@ -127,7 +127,7 @@ async function handleSave({ data, action }) {
 
         <!-- Quiz Form -->
         <div v-if="showForm">
-            <QuizForm :quizId="editingQuiz?.id || null" :classId="route.params.classId" :initialData="editingQuiz" @save="handleSave" @close="showForm = false" />
+            <QuizForm :quizId="editingQuiz?.quizId || null" :classId="route.params.classId" :initialData="editingQuiz" @save="handleSave" @close="showForm = false" />
         </div>
     </div>
 </template>

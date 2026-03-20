@@ -17,9 +17,7 @@ onMounted(async () => {
     try {
         await fetchClassDetail(classId);
         await fetchStudents(classId);
-        if (currentClass.value?.courseId) {
-            await fetchQuizzes(currentClass.value.courseId);
-        }
+        await fetchQuizzes(classId);
     } catch (err) {
         handleError(err, 'Tải thông tin lớp học');
     }
@@ -39,7 +37,7 @@ function goToQuizManagement() {
         <!-- Header -->
         <div class="flex items-center gap-4 mb-4">
             <Button label="← Quay lại" text @click="goBack" />
-            <h3 v-if="currentClass" class="m-0">📚 Lớp {{ currentClass.code }} - {{ currentClass.courseName }}</h3>
+            <h3 v-if="currentClass" class="m-0">📚 Lớp {{ currentClass.classCode }} - {{ currentClass.courseName }}</h3>
         </div>
 
         <div v-if="loading" class="text-center py-8">
@@ -63,10 +61,7 @@ function goToQuizManagement() {
                 <div class="card">
                     <!-- Tab: Students -->
                     <div v-if="activeTab === 0">
-                        <div class="flex justify-between items-center mb-4">
-                            <h5 class="m-0">DANH SÁCH SINH VIÊN ({{ students.length }})</h5>
-                            <Button label="+ Thêm SV" icon="pi pi-plus" size="small" />
-                        </div>
+                        <h5 class="mb-4">DANH SÁCH SINH VIÊN ({{ students.length }})</h5>
                         <StudentTable :students="students" :classId="route.params.id" :loading="loading" />
                     </div>
 

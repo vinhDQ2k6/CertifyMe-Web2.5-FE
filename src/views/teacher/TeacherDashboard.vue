@@ -38,14 +38,7 @@ onMounted(async () => {
         <!-- Classes Table -->
         <div class="col-span-12">
             <div class="card">
-                <Toolbar class="mb-4">
-                    <template #start>
-                        <h5 class="m-0">📚 Danh sách lớp học</h5>
-                    </template>
-                    <template #end>
-                        <Button label="+ Tạo lớp" icon="pi pi-plus" />
-                    </template>
-                </Toolbar>
+                <h5 class="mb-4">📚 Danh sách lớp học</h5>
                 <ClassTable :classes="classes" :loading="loading" />
             </div>
         </div>

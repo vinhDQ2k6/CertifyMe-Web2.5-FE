@@ -4,13 +4,14 @@ import CertificateCard from '@/components/student/CertificateCard.vue';
 import BlockchainInfo from '@/components/shared/BlockchainInfo.vue';
 import { useStudent } from '@/composables/useStudent';
 import { useErrorHandler } from '@/composables/useErrorHandler';
+import CertificateService from '@/services/CertificateService';
 import { useRoute, useRouter } from 'vue-router';
 import { onMounted, ref } from 'vue';
 
 const route = useRoute();
 const router = useRouter();
 const { currentCourse, loading, getCourseDetail } = useStudent();
-const { handleError } = useErrorHandler();
+const { handleError, showSuccess } = useErrorHandler();
 const showBlockchainInfo = ref(false);
 
 onMounted(async () => {
@@ -31,12 +32,23 @@ function handleQuizAction({ quizId, action }) {
     }
 }
 
-function handleDownload() {
-    console.log('Download certificate');
+async function handleDownload() {
+    if (!currentCourse.value?.certificate?.certificateId) return;
+    try {
+        await CertificateService.downloadCertificatePDF(currentCourse.value.certificate.certificateId);
+        showSuccess('Thành công', 'Đã tải xuống chứng chỉ PDF');
+    } catch (err) {
+        handleError(err, 'Tải PDF chứng chỉ');
+    }
 }
 
 function handleShare() {
-    console.log('Share certificate');
+    if (!currentCourse.value?.certificate?.verificationHash) return;
+    const url = `${window.location.origin}/verify/${currentCourse.value.certificate.verificationHash}`;
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(url);
+        showSuccess('Đã sao chép', 'Link xác minh đã được sao chép');
+    }
 }
 
 function handleVerify() {

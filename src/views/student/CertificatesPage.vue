@@ -32,7 +32,7 @@ function selectCertificate(cert) {
 async function handleDownload(cert) {
     downloading.value = true;
     try {
-        await CertificateService.downloadCertificatePDF(cert.id);
+        await CertificateService.downloadCertificatePDF(cert.certificateId);
         showSuccess('Thành công', 'Đã tải xuống chứng chỉ PDF');
     } catch (err) {
         handleError(err, 'Tải PDF chứng chỉ');
@@ -44,7 +44,7 @@ async function handleDownload(cert) {
 async function handleVerify(cert) {
     verifying.value = true;
     try {
-        await CertificateService.verifyCertificateOnChain(cert.id);
+        await CertificateService.verifyCertificateOnChain(cert.certificateId);
         showBlockchainInfo.value = true;
         showSuccess('Xác minh thành công', 'Chứng chỉ hợp lệ trên blockchain');
     } catch (err) {
@@ -107,10 +107,10 @@ function formatDate(date) {
                     <div class="flex flex-col gap-3">
                         <div
                             v-for="cert in certificates"
-                            :key="cert.id"
+                            :key="cert.certificateId"
                             :class="[
                                 'flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all',
-                                selectedCert?.id === cert.id ? 'border-primary bg-primary/10 dark:bg-primary/20' : 'border-surface-200 dark:border-surface-600 hover:border-primary/50'
+                                selectedCert?.certificateId === cert.certificateId ? 'border-primary bg-primary/10 dark:bg-primary/20' : 'border-surface-200 dark:border-surface-600 hover:border-primary/50'
                             ]"
                             @click="selectCertificate(cert)"
                         >
@@ -118,11 +118,11 @@ function formatDate(date) {
                             <div class="flex-1 min-w-0">
                                 <div class="font-semibold text-surface-900 dark:text-surface-0 truncate">{{ cert.courseName }}</div>
                                 <div class="text-muted-color text-sm">{{ cert.courseCode }}</div>
-                                <div class="text-muted-color text-xs">📅 {{ formatDate(cert.completionDate) }}</div>
+                                <div class="text-muted-color text-xs">📅 {{ formatDate(cert.issuedAt) }}</div>
                             </div>
                             <div class="text-right shrink-0">
                                 <Tag value="✅ Đạt" severity="success" />
-                                <div class="text-sm font-bold mt-1">{{ cert.grade }}/10</div>
+                                <div class="text-sm font-bold mt-1">{{ cert.averageScore }}/10</div>
                             </div>
                         </div>
                     </div>
@@ -141,8 +141,8 @@ function formatDate(date) {
                         :studentName="selectedCert.studentName"
                         :courseName="selectedCert.courseName"
                         :courseCode="selectedCert.courseCode"
-                        :grade="selectedCert.grade"
-                        :completionDate="selectedCert.completionDate"
+                        :grade="selectedCert.averageScore"
+                        :completionDate="selectedCert.issuedAt"
                         :verificationHash="selectedCert.verificationHash"
                         :blockchainInfo="selectedCert.blockchainInfo"
                         @download="handleDownload(selectedCert)"

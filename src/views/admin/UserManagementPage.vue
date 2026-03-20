@@ -15,7 +15,7 @@ const confirmDialog = ref({ visible: false, userId: null, action: '', title: '',
 
 const filteredUsers = computed(() => {
     return users.value.filter((u) => {
-        const matchSearch = !searchQuery.value || u.name.toLowerCase().includes(searchQuery.value.toLowerCase()) || u.email.toLowerCase().includes(searchQuery.value.toLowerCase());
+        const matchSearch = !searchQuery.value || u.fullName.toLowerCase().includes(searchQuery.value.toLowerCase()) || u.email.toLowerCase().includes(searchQuery.value.toLowerCase());
         const matchRole = !selectedRole.value || u.role === selectedRole.value;
         const matchStatus = selectedStatus.value === '' || (selectedStatus.value === 'active' ? u.isActive : !u.isActive);
         return matchSearch && matchRole && matchStatus;
@@ -51,11 +51,11 @@ function openToggleStatus(user) {
     const isDeactivate = user.isActive;
     confirmDialog.value = {
         visible: true,
-        userId: user.id,
+        userId: user.userId,
         action: 'toggleStatus',
         newStatus: !user.isActive,
         title: isDeactivate ? 'Vô hiệu hóa tài khoản' : 'Kích hoạt tài khoản',
-        message: isDeactivate ? `Bạn có chắc muốn vô hiệu hóa tài khoản của "${user.name}"?` : `Bạn có chắc muốn kích hoạt tài khoản của "${user.name}"?`,
+        message: isDeactivate ? `Bạn có chắc muốn vô hiệu hóa tài khoản của "${user.fullName}"?` : `Bạn có chắc muốn kích hoạt tài khoản của "${user.fullName}"?`,
         confirmLabel: isDeactivate ? 'Vô hiệu hóa' : 'Kích hoạt',
         confirmSeverity: isDeactivate ? 'danger' : 'success',
         loading: false
@@ -67,7 +67,7 @@ async function handleConfirm() {
     try {
         if (confirmDialog.value.action === 'toggleStatus') {
             await UserService.updateUserStatus(confirmDialog.value.userId, confirmDialog.value.newStatus);
-            const user = users.value.find((u) => u.id === confirmDialog.value.userId);
+            const user = users.value.find((u) => u.userId === confirmDialog.value.userId);
             if (user) user.isActive = confirmDialog.value.newStatus;
             showSuccess('Thành công', 'Đã cập nhật trạng thái tài khoản');
         }
@@ -81,7 +81,7 @@ async function handleConfirm() {
 
 async function changeRole(user, newRole) {
     try {
-        await UserService.updateUserRole(user.id, newRole);
+        await UserService.updateUserRole(user.userId, newRole);
         user.role = newRole;
         showSuccess('Thành công', `Đã đổi role thành ${newRole}`);
     } catch (err) {
@@ -185,14 +185,14 @@ const availableRoles = ['STUDENT', 'TEACHER', 'ADMIN'];
                 </Toolbar>
 
                 <DataTable :value="filteredUsers" :loading="loading" stripedRows :paginator="filteredUsers.length > 10" :rows="10">
-                    <Column field="name" header="Tên người dùng" sortable style="min-width: 14rem">
+                    <Column field="fullName" header="Tên người dùng" sortable style="min-width: 14rem">
                         <template #body="slotProps">
                             <div class="flex items-center gap-2">
                                 <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm">
-                                    {{ slotProps.data.name[0] }}
+                                    {{ slotProps.data.fullName[0] }}
                                 </div>
                                 <div>
-                                    <div class="font-medium">{{ slotProps.data.name }}</div>
+                                    <div class="font-medium">{{ slotProps.data.fullName }}</div>
                                     <div class="text-muted-color text-xs">{{ slotProps.data.email }}</div>
                                 </div>
                             </div>
