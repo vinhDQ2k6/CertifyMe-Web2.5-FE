@@ -1,10 +1,10 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import QuizService from '@/services/QuizService';
-import AuthService from '@/services/AuthService';
 import { useErrorHandler } from '@/composables/useErrorHandler';
+import AuthService from '@/services/AuthService';
+import QuizService from '@/services/QuizService';
 import { useToast } from 'primevue/usetoast';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 const route = useRoute();
 const router = useRouter();

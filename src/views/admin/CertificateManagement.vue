@@ -3,12 +3,14 @@ import CertificateDetail from '@/components/admin/CertificateDetail.vue';
 import BlockchainInfo from '@/components/shared/BlockchainInfo.vue';
 import RevokeDialog from '@/components/admin/RevokeDialog.vue';
 import CertificateService from '@/services/CertificateService';
+import { useAuth } from '@/composables/useAuth';
 import { useErrorHandler } from '@/composables/useErrorHandler';
 import { useRoute, useRouter } from 'vue-router';
 import { onMounted, ref } from 'vue';
 
 const route = useRoute();
 const router = useRouter();
+const { user } = useAuth();
 const { handleError, showSuccess } = useErrorHandler();
 
 const certificate = ref(null);
@@ -38,7 +40,7 @@ function openRevokeDialog() {
 async function handleRevoke({ reason }) {
     revokeLoading.value = true;
     try {
-        await CertificateService.revokeCertificate(route.params.id, reason);
+        await CertificateService.revokeCertificate(route.params.id, reason, user.value?.userId);
         certificate.value.status = 'revoked';
         revokeDialogVisible.value = false;
         showSuccess('Thành công', 'Bằng đã được thu hồi');

@@ -1,4 +1,4 @@
-import { fetchResource, createResource, updateResource, deleteResource } from '@/lib/apiFetcher';
+import { createResource, deleteResource, fetchResource, updateResource } from '@/lib/apiFetcher';
 
 const QuizService = {
     /**

@@ -13,8 +13,12 @@ const CertificateService = {
         return await fetchResource('/certificates/search', { params: { q: query } });
     },
 
-    async getRecentCertificates(limit = 10) {
-        return await fetchResource('/certificates/recent', { params: { limit } });
+    /**
+     * Get recent certificates with pagination
+     * API: GET /api/certificates/recent?limit=10&page=1
+     */
+    async getRecentCertificates(limit = 10, page = 1) {
+        return await fetchResource('/certificates/recent', { params: { limit, page } });
     },
 
     async verifyCertificateOnChain(certId) {
