@@ -1,10 +1,10 @@
 <script setup>
-import StudentTable from '@/components/teacher/StudentTable.vue';
 import QuizList from '@/components/student/QuizList.vue';
-import { useTeacher } from '@/composables/useTeacher';
+import StudentTable from '@/components/teacher/StudentTable.vue';
 import { useErrorHandler } from '@/composables/useErrorHandler';
-import { useRoute, useRouter } from 'vue-router';
+import { useTeacher } from '@/composables/useTeacher';
 import { onMounted, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 const route = useRoute();
 const router = useRouter();

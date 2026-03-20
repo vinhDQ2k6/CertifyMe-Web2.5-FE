@@ -1,12 +1,12 @@
 <script setup>
-import QuizList from '@/components/student/QuizList.vue';
-import CertificateCard from '@/components/student/CertificateCard.vue';
 import BlockchainInfo from '@/components/shared/BlockchainInfo.vue';
-import { useStudent } from '@/composables/useStudent';
+import CertificateCard from '@/components/student/CertificateCard.vue';
+import QuizList from '@/components/student/QuizList.vue';
 import { useErrorHandler } from '@/composables/useErrorHandler';
+import { useStudent } from '@/composables/useStudent';
 import CertificateService from '@/services/CertificateService';
-import { useRoute, useRouter } from 'vue-router';
 import { onMounted, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 const route = useRoute();
 const router = useRouter();
