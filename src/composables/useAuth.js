@@ -115,7 +115,7 @@ export function useAuth() {
             isAuthenticated.value = true;
             return userData;
         } catch (err) {
-            error.value = err.response?.data?.error || 'Failed to fetch user info';
+            error.value = err.message || 'Failed to fetch user info';
             throw err;
         } finally {
             loading.value = false;
