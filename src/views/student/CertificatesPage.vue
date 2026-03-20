@@ -1,11 +1,11 @@
 <script setup>
-import CertificateCard from '@/components/student/CertificateCard.vue';
 import BlockchainInfo from '@/components/shared/BlockchainInfo.vue';
-import { useStudent } from '@/composables/useStudent';
+import CertificateCard from '@/components/student/CertificateCard.vue';
 import { useAuth } from '@/composables/useAuth';
 import { useErrorHandler } from '@/composables/useErrorHandler';
-import { onMounted, ref } from 'vue';
+import { useStudent } from '@/composables/useStudent';
 import CertificateService from '@/services/CertificateService';
+import { onMounted, ref } from 'vue';
 
 const { user } = useAuth();
 const { certificates, loading, fetchCertificates } = useStudent();
@@ -18,7 +18,7 @@ const verifying = ref(false);
 
 onMounted(async () => {
     try {
-        await fetchCertificates(user.value?.id);
+        await fetchCertificates(user.value?.userId);
     } catch (err) {
         handleError(err, 'Tải danh sách chứng chỉ');
     }

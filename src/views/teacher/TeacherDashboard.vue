@@ -1,9 +1,9 @@
 <script setup>
-import ClassTable from '@/components/teacher/ClassTable.vue';
 import StatsCard from '@/components/shared/StatsCard.vue';
-import { useTeacher } from '@/composables/useTeacher';
+import ClassTable from '@/components/teacher/ClassTable.vue';
 import { useAuth } from '@/composables/useAuth';
 import { useErrorHandler } from '@/composables/useErrorHandler';
+import { useTeacher } from '@/composables/useTeacher';
 import { computed, onMounted } from 'vue';
 
 const { user } = useAuth();
@@ -15,7 +15,7 @@ const totalQuizzes = computed(() => classes.value.reduce((sum, c) => sum + (c.qu
 
 onMounted(async () => {
     try {
-        await fetchClasses(user.value?.id);
+        await fetchClasses(user.value?.userId);
     } catch (err) {
         handleError(err, 'Tải danh sách lớp học');
     }

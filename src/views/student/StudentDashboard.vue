@@ -1,9 +1,9 @@
 <script setup>
-import CourseCard from '@/components/student/CourseCard.vue';
 import StatsCard from '@/components/shared/StatsCard.vue';
-import { useStudent } from '@/composables/useStudent';
+import CourseCard from '@/components/student/CourseCard.vue';
 import { useAuth } from '@/composables/useAuth';
 import { useErrorHandler } from '@/composables/useErrorHandler';
+import { useStudent } from '@/composables/useStudent';
 import { onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 
@@ -14,7 +14,7 @@ const { handleError } = useErrorHandler();
 
 onMounted(async () => {
     try {
-        await fetchCourses(user.value?.id);
+        await fetchCourses(user.value?.userId);
     } catch (err) {
         handleError(err, 'Tải danh sách khóa học');
     }
