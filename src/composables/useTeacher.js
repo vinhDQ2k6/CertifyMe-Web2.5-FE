@@ -63,7 +63,7 @@ export function useTeacher() {
             await QuizService.publishQuiz(quizId);
             const index = quizzes.value.findIndex((q) => q.id === quizId);
             if (index !== -1) {
-                quizzes.value[index].status = 'published';
+                quizzes.value[index].status = 'active';
             }
         } finally {
             loading.value = false;
