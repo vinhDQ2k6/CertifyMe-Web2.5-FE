@@ -18,11 +18,11 @@ const searchQuery = ref('');
 const filteredSubmissions = computed(() => {
     if (!searchQuery.value.trim()) return submissions.value;
     const q = searchQuery.value.toLowerCase();
-    return submissions.value.filter((s) => s.studentName.toLowerCase().includes(q) || s.email.toLowerCase().includes(q));
+    return submissions.value.filter((s) => s.studentName.toLowerCase().includes(q) || s.studentEmail.toLowerCase().includes(q));
 });
 
-const passedCount = computed(() => submissions.value.filter((s) => s.isPassed).length);
-const failedCount = computed(() => submissions.value.filter((s) => !s.isPassed).length);
+const passedCount = computed(() => submissions.value.filter((s) => s.passed).length);
+const failedCount = computed(() => submissions.value.filter((s) => !s.passed).length);
 const avgScore = computed(() => {
     if (!submissions.value.length) return 0;
     const sum = submissions.value.reduce((acc, s) => acc + s.score, 0);
@@ -54,12 +54,6 @@ function goBack() {
     router.push({ name: 'quizManagement', params: { classId: route.params.classId } });
 }
 
-function formatTime(seconds) {
-    const m = Math.floor(seconds / 60);
-    const s = seconds % 60;
-    return `${m}:${String(s).padStart(2, '0')}`;
-}
-
 function formatDate(dateStr) {
     if (!dateStr) return '';
     return new Date(dateStr).toLocaleString('vi-VN');
@@ -67,8 +61,8 @@ function formatDate(dateStr) {
 
 function exportCSV() {
     if (!submissions.value.length) return;
-    const headers = ['Họ tên', 'Email', 'Điểm', 'Kết quả', 'Thời gian làm', 'Ngày nộp'];
-    const rows = submissions.value.map((s) => [s.studentName, s.email, `${s.score}/${s.maxScore}`, s.isPassed ? 'ĐẠT' : 'KHÔNG ĐẠT', formatTime(s.timeSpent), formatDate(s.submittedAt)]);
+    const headers = ['Họ tên', 'Email', 'Điểm', 'Kết quả', 'Ngày nộp'];
+    const rows = submissions.value.map((s) => [s.studentName, s.studentEmail, s.score, s.passed ? 'ĐẠT' : 'KHÔNG ĐẠT', formatDate(s.submittedAt)]);
     const csv = [headers, ...rows].map((r) => r.join(',')).join('\n');
     const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -100,10 +94,10 @@ function exportCSV() {
                             :class="['p-3 rounded-lg border-2 cursor-pointer transition-all', selectedQuiz?.id === quiz.id ? 'border-primary bg-primary/10 dark:bg-primary/20' : 'border-surface-200 dark:border-surface-600 hover:border-primary/50']"
                             @click="loadSubmissions(quiz)"
                         >
-                            <div class="font-medium text-surface-900 dark:text-surface-0">{{ quiz.name }}</div>
+                            <div class="font-medium text-surface-900 dark:text-surface-0">{{ quiz.quizName }}</div>
                             <div class="flex items-center gap-2 mt-1">
-                                <Tag :value="quiz.status === 'published' ? '🟢 Published' : '📝 Draft'" :severity="quiz.status === 'published' ? 'success' : 'warn'" />
-                                <span class="text-muted-color text-xs">{{ quiz.questionsCount }} câu</span>
+                                <Tag :value="quiz.status === 'active' ? '🟢 Active' : '📝 Draft'" :severity="quiz.status === 'active' ? 'success' : 'warn'" />
+                                <span class="text-muted-color text-xs">{{ quiz.questionCount }} câu</span>
                             </div>
                         </div>
                         <div v-if="quizzes.length === 0" class="text-center text-muted-color py-4">Không có quiz nào</div>
@@ -139,7 +133,7 @@ function exportCSV() {
                     <div class="card">
                         <Toolbar class="mb-4">
                             <template #start>
-                                <h5 class="m-0">📋 Bài nộp - {{ selectedQuiz.name }}</h5>
+                                <h5 class="m-0">📋 Bài nộp - {{ selectedQuiz.quizName }}</h5>
                             </template>
                             <template #end>
                                 <div class="flex items-center gap-2">
@@ -160,23 +154,18 @@ function exportCSV() {
                                 <template #body="slotProps">
                                     <div>
                                         <div class="font-medium">{{ slotProps.data.studentName }}</div>
-                                        <div class="text-muted-color text-xs">{{ slotProps.data.email }}</div>
+                                        <div class="text-muted-color text-xs">{{ slotProps.data.studentEmail }}</div>
                                     </div>
                                 </template>
                             </Column>
                             <Column header="Điểm" sortable style="min-width: 7rem">
                                 <template #body="slotProps">
-                                    <span :class="slotProps.data.isPassed ? 'text-green-600 dark:text-green-400 font-bold' : 'text-red-600 dark:text-red-400 font-bold'"> {{ slotProps.data.score }}/{{ slotProps.data.maxScore }} </span>
+                                    <span :class="slotProps.data.passed ? 'text-green-600 dark:text-green-400 font-bold' : 'text-red-600 dark:text-red-400 font-bold'">{{ slotProps.data.score }}</span>
                                 </template>
                             </Column>
                             <Column header="Kết quả" style="min-width: 7rem">
                                 <template #body="slotProps">
-                                    <Tag :value="slotProps.data.isPassed ? '✅ ĐẠT' : '❌ CHƯA ĐẠT'" :severity="slotProps.data.isPassed ? 'success' : 'danger'" />
-                                </template>
-                            </Column>
-                            <Column header="Thời gian" style="min-width: 7rem">
-                                <template #body="slotProps">
-                                    <span class="font-mono">{{ formatTime(slotProps.data.timeSpent) }}</span>
+                                    <Tag :value="slotProps.data.passed ? '✅ ĐẠT' : '❌ CHƯA ĐẠT'" :severity="slotProps.data.passed ? 'success' : 'danger'" />
                                 </template>
                             </Column>
                             <Column header="Ngày nộp" sortable style="min-width: 10rem">

@@ -195,7 +195,7 @@ function goBack() {
                         </div>
                         <!-- Timer -->
                         <div
-                            v-if="quiz.timeLimit"
+                            v-if="quiz.duration"
                             :class="[
                                 'flex items-center gap-2 px-3 py-2 rounded-lg font-mono text-lg font-bold',
                                 timerSeverity === 'danger'
