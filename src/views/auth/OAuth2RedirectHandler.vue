@@ -1,60 +1,40 @@
 <script setup>
-import { onMounted } from 'vue';
-import { useRouter } from 'vue-router';
 import { useAuth } from '@/composables/useAuth';
-import AuthService from '@/services/AuthService';
+import { onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
+const route = useRoute();
 const router = useRouter();
-const { handleOAuth2Callback } = useAuth();
+const { setToken, setRole } = useAuth();
 
-onMounted(async () => {
-    try {
-        // Step 1: Extract token from URL parameter
-        const urlParams = new URLSearchParams(window.location.search);
-        const token = urlParams.get('token');
-        const error = urlParams.get('error');
+onMounted(() => {
+    // Read params from URL (sent by backend)
+    const token = route.query.token;
+    const role = route.query.role;
+    const redirect = route.query.redirect;
+    const error = route.query.error;
 
-        // Check for errors from backend
-        if (error) {
-            console.error('OAuth2 error from backend:', error);
-            router.push({ name: 'login' });
-            return;
-        }
+    // Handle OAuth error
+    if (error) {
+        console.error('OAuth error:', error);
+        router.push('/auth/login?error=' + error);
+        return;
+    }
 
-        // Check if token exists
-        if (!token) {
-            console.error('No token in OAuth2 redirect URL');
-            router.push({ name: 'login' });
-            return;
-        }
+    // Handle successful login
+    if (token && role && redirect) {
+        // Save token and role
+        setToken(token);
+        setRole(role);
 
-        // Step 2: Process token via useAuth
-        const userInfo = handleOAuth2Callback(token);
-
-        // Step 3: Frontend decides redirect by role
-        const roleRedirects = {
-            STUDENT: { name: 'studentDashboard' },
-            TEACHER: { name: 'teacherDashboard' },
-            ADMIN: { name: 'adminDashboard' }
-        };
-
-        const redirectRoute = roleRedirects[userInfo.role];
-
-        if (!redirectRoute) {
-            console.error('Unknown user role:', userInfo.role);
-            AuthService.clearAuthData();
-            router.push({ name: 'login' });
-            return;
-        }
-
-        // Step 4: Clean URL history (remove ?token=...)
+        // Clean URL history (remove ?token=...)
         window.history.replaceState({}, document.title, window.location.pathname);
 
-        // Step 5: Navigate to role-specific dashboard
-        router.push(redirectRoute);
-    } catch (error) {
-        console.error('OAuth2 callback error:', error);
-        router.push({ name: 'login' });
+        // Redirect to path from backend
+        router.push(redirect);
+    } else {
+        // Fallback if missing params
+        router.push('/auth/login?error=missing_params');
     }
 });
 </script>

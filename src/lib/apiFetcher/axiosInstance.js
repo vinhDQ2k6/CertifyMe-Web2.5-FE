@@ -32,6 +32,7 @@ axiosInstance.interceptors.response.use(
             console.warn('Unauthorized - token expired or invalid');
             localStorage.removeItem('authToken');
             localStorage.removeItem('authUser');
+            localStorage.removeItem('authRole');
             window.location.href = '/auth/login';
         }
         return Promise.reject(error);

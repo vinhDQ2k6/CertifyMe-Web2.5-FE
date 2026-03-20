@@ -2,6 +2,7 @@ import axiosInstance from '@/lib/apiFetcher/axiosInstance';
 
 const TOKEN_KEY = 'authToken';
 const USER_KEY = 'authUser';
+const ROLE_KEY = 'authRole';
 
 const AuthService = {
     /**
@@ -21,11 +22,27 @@ const AuthService = {
     },
 
     /**
+     * Set user role - save to localStorage
+     * @param {string} role - STUDENT, TEACHER, or ADMIN
+     */
+    setRole(role) {
+        localStorage.setItem(ROLE_KEY, role);
+    },
+
+    /**
+     * Get user role from localStorage
+     */
+    getRole() {
+        return localStorage.getItem(ROLE_KEY);
+    },
+
+    /**
      * Clear auth data from localStorage and axios headers
      */
     clearAuthData() {
         localStorage.removeItem(TOKEN_KEY);
         localStorage.removeItem(USER_KEY);
+        localStorage.removeItem(ROLE_KEY);
         delete axiosInstance.defaults.headers.common['Authorization'];
     },
 
