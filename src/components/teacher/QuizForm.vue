@@ -31,7 +31,19 @@ watch(
             name.value = data.quizName || data.name || '';
             duration.value = data.duration || 60;
             passingScore.value = data.passingScore || 5.0;
-            questions.value = data.questions ? [...data.questions] : [];
+            questions.value = data.questions ? data.questions.map(q => ({
+                text: q.questionText || q.text || '',
+                options: q.options ? q.options.map(o => ({
+                    label: o.optionId || o.label || '',
+                    value: o.optionText || o.value || '',
+                    isCorrect: o.isCorrect || false
+                })) : [
+                    { label: 'A', value: '', isCorrect: false },
+                    { label: 'B', value: '', isCorrect: false },
+                    { label: 'C', value: '', isCorrect: false },
+                    { label: 'D', value: '', isCorrect: false }
+                ]
+            })) : [];坦,oldString:
         }
     },
     { immediate: true }
@@ -62,7 +74,15 @@ function getFormData() {
         quizName: name.value,
         duration: duration.value,
         passingScore: passingScore.value,
-        questions: questions.value
+        questions: questions.value.map(q => ({
+            questionText: q.text || q.questionText,
+            questionType: "multiple_choice",
+            options: q.options ? q.options.map(o => ({
+                optionId: o.label || o.optionId,
+                optionText: o.value || o.optionText,
+                isCorrect: o.isCorrect
+            })) : []
+        }))
     };
 }
 
