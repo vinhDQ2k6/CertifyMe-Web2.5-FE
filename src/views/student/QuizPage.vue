@@ -2,6 +2,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import QuizService from '@/services/QuizService';
+import AuthService from '@/services/AuthService';
 import { useErrorHandler } from '@/composables/useErrorHandler';
 import { useToast } from 'primevue/usetoast';
 
@@ -9,6 +10,8 @@ const route = useRoute();
 const router = useRouter();
 const toast = useToast();
 const { handleError } = useErrorHandler();
+
+let studentId = null;
 
 const quiz = ref(null);
 const loading = ref(false);
@@ -59,6 +62,13 @@ async function handleAutoSubmit() {
 onMounted(async () => {
     loading.value = true;
     try {
+        // Get studentId from JWT token
+        const userInfo = AuthService.getUserFromToken();
+        if (!userInfo?.userId) {
+            throw new Error('Unable to get student ID');
+        }
+        studentId = userInfo.userId;
+
         const data = await QuizService.getQuizDetail(route.params.quizId);
         quiz.value = data;
     } catch (err) {
@@ -95,8 +105,11 @@ async function submitQuiz() {
     if (timerInterval.value) clearInterval(timerInterval.value);
     submitting.value = true;
     try {
+        if (!studentId) {
+            throw new Error('Student ID not found');
+        }
         const submissionAnswers = Object.entries(answers.value).map(([questionId, answer]) => ({ questionId, answer }));
-        const res = await QuizService.submitQuizAnswers(route.params.quizId, submissionAnswers);
+        const res = await QuizService.submitQuizAnswers(route.params.quizId, studentId, submissionAnswers);
         result.value = res;
         showResult.value = true;
     } catch (err) {

@@ -37,10 +37,10 @@ export function useTeacher() {
         }
     };
 
-    const fetchQuizzes = async (courseId) => {
+    const fetchQuizzes = async (classId) => {
         loading.value = true;
         try {
-            quizzes.value = await QuizService.getQuizzesForCourse(courseId);
+            quizzes.value = await QuizService.getQuizzesForClass(classId);
         } finally {
             loading.value = false;
         }

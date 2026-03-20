@@ -1,4 +1,5 @@
 import axiosInstance from '@/lib/apiFetcher/axiosInstance';
+import { fetchResource } from '@/lib/apiFetcher';
 
 const TOKEN_KEY = 'authToken';
 const USER_KEY = 'authUser';
@@ -89,32 +90,15 @@ const AuthService = {
      * Returns UserResponse from backend
      */
     async getCurrentUser() {
-        try {
-            const response = await axiosInstance.get('/auth/me');
-
-            if (response.data.success) {
-                return response.data.data;
-            } else {
-                throw new Error(response.data.error || 'Failed to fetch user');
-            }
-        } catch (error) {
-            console.error('Error fetching current user:', error);
-            throw error;
-        }
+        return await fetchResource('/auth/me');
     },
 
     /**
      * Check role of current user via /api/auth/check-role
-     * Returns message like "You are logged in as: STUDENT"
+     * Returns success message
      */
     async checkRole() {
-        try {
-            const response = await axiosInstance.get('/auth/check-role');
-            return response.data;
-        } catch (error) {
-            console.error('Check role error:', error);
-            throw error;
-        }
+        return await fetchResource('/auth/check-role');
     },
 
     /**
@@ -122,16 +106,11 @@ const AuthService = {
      */
     async logout() {
         try {
-            const response = await axiosInstance.post('/auth/logout');
-            if (response.data.success) {
-                console.log(response.data.message);
-            }
+            await fetchResource('/auth/logout');
         } catch (error) {
             console.error('Logout error:', error);
         } finally {
             this.clearAuthData();
         }
     }
-};
-
 export default AuthService;

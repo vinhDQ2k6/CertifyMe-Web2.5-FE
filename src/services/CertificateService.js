@@ -25,8 +25,15 @@ const CertificateService = {
         return await fetchResource(`/certificates/${certId}/pdf`, { responseType: 'blob' });
     },
 
-    async revokeCertificate(certId, reason) {
-        return await createResource(`/certificates/${certId}/revoke`, { reason });
+    /**
+     * Revoke a certificate
+     * API: POST /api/certificates/{certificateId}/revoke
+     * @param {string} certId - Certificate ID
+     * @param {string} reason - Reason for revocation
+     * @param {string} revokedBy - Admin user ID who is revoking
+     */
+    async revokeCertificate(certId, reason, revokedBy) {
+        return await createResource(`/certificates/${certId}/revoke`, { reason, revokedBy });
     },
 
     async getCertificateStats() {
