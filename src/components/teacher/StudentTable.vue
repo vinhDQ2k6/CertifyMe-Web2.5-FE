@@ -16,11 +16,11 @@ defineProps({
 
 function getStatusSeverity(status) {
     switch (status) {
-        case 'passed':
+        case 'PASSED':
             return 'success';
-        case 'learning':
+        case 'LEARNING':
             return 'info';
-        case 'incomplete':
+        case 'INCOMPLETE':
             return 'danger';
         default:
             return null;
@@ -29,11 +29,11 @@ function getStatusSeverity(status) {
 
 function getStatusLabel(status) {
     switch (status) {
-        case 'passed':
+        case 'PASSED':
             return '✅ PASSED';
-        case 'learning':
+        case 'LEARNING':
             return '📖 Learning';
-        case 'incomplete':
+        case 'INCOMPLETE':
             return '❌ Incomplete';
         default:
             return status;
@@ -48,7 +48,7 @@ function getStatusLabel(status) {
                 {{ slotProps.index + 1 }}
             </template>
         </Column>
-        <Column field="name" header="Họ tên" sortable style="min-width: 12rem"></Column>
+        <Column field="fullName" header="Họ tên" sortable style="min-width: 12rem"></Column>
         <Column field="email" header="Email" sortable style="min-width: 14rem"></Column>
         <Column header="Tiến độ" style="min-width: 8rem">
             <template #body="slotProps"> {{ slotProps.data.completedQuizzes }}/{{ slotProps.data.totalQuizzes }} quiz </template>

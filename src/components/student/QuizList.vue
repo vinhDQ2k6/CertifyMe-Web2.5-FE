@@ -14,11 +14,13 @@ const emit = defineEmits(['actionClick']);
 
 function getStatusIcon(status) {
     switch (status) {
-        case 'completed':
+        case 'PASSED':
+        case 'COMPLETED':
             return '✅';
-        case 'pending':
+        case 'ACTIVE':
+        case 'PENDING':
             return '🔓';
-        case 'locked':
+        case 'LOCKED':
             return '🔒';
         default:
             return '❓';
@@ -27,11 +29,13 @@ function getStatusIcon(status) {
 
 function getStatusSeverity(status) {
     switch (status) {
-        case 'completed':
+        case 'PASSED':
+        case 'COMPLETED':
             return 'success';
-        case 'pending':
+        case 'ACTIVE':
+        case 'PENDING':
             return 'info';
-        case 'locked':
+        case 'LOCKED':
             return 'warn';
         default:
             return null;
@@ -41,9 +45,11 @@ function getStatusSeverity(status) {
 function getActionLabel(status) {
     if (props.isCompleted) return 'Xem lại';
     switch (status) {
-        case 'completed':
+        case 'PASSED':
+        case 'COMPLETED':
             return 'Xem lại';
-        case 'pending':
+        case 'ACTIVE':
+        case 'PENDING':
             return 'Làm bài';
         default:
             return '';
@@ -51,7 +57,7 @@ function getActionLabel(status) {
 }
 
 function handleAction(quiz) {
-    emit('actionClick', { quizId: quiz.id, action: quiz.status === 'completed' ? 'review' : 'start' });
+    emit('actionClick', { quizId: quiz.quizId, action: quiz.status === 'PASSED' || quiz.status === 'COMPLETED' ? 'review' : 'start' });
 }
 </script>
 
@@ -62,7 +68,7 @@ function handleAction(quiz) {
                 <Tag :value="getStatusIcon(slotProps.data.status)" :severity="getStatusSeverity(slotProps.data.status)" />
             </template>
         </Column>
-        <Column field="name" header="Tên quiz" sortable></Column>
+        <Column field="quizName" header="Tên quiz" sortable></Column>
         <Column header="Điểm" style="width: 8rem">
             <template #body="slotProps">
                 <span v-if="slotProps.data.score !== null && slotProps.data.score !== undefined"> {{ slotProps.data.score }}/{{ slotProps.data.maxScore }} </span>
@@ -71,7 +77,7 @@ function handleAction(quiz) {
         </Column>
         <Column header="Hành động" style="width: 8rem">
             <template #body="slotProps">
-                <Button v-if="slotProps.data.status !== 'locked'" :label="getActionLabel(slotProps.data.status)" size="small" text @click="handleAction(slotProps.data)" />
+                <Button v-if="slotProps.data.status !== 'LOCKED' && slotProps.data.status !== 'locked'" :label="getActionLabel(slotProps.data.status)" size="small" text @click="handleAction(slotProps.data)" />
                 <span v-else class="text-muted-color">🔒</span>
             </template>
         </Column>

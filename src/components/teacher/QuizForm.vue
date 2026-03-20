@@ -1,6 +1,6 @@
 <script setup>
-import QuestionForm from './QuestionForm.vue';
 import { ref, watch } from 'vue';
+import QuestionForm from './QuestionForm.vue';
 
 const props = defineProps({
     quizId: {
@@ -28,7 +28,7 @@ watch(
     () => props.initialData,
     (data) => {
         if (data) {
-            name.value = data.name || '';
+            name.value = data.quizName || data.name || '';
             duration.value = data.duration || 60;
             passingScore.value = data.passingScore || 5.0;
             questions.value = data.questions ? [...data.questions] : [];
@@ -59,7 +59,7 @@ function deleteQuestion(index) {
 
 function getFormData() {
     return {
-        name: name.value,
+        quizName: name.value,
         duration: duration.value,
         passingScore: passingScore.value,
         questions: questions.value

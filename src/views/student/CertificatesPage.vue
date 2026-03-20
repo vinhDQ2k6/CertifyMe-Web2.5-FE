@@ -138,7 +138,7 @@ function formatDate(date) {
 
                 <div v-else>
                     <CertificateCard
-                        :studentName="selectedCert.studentName"
+                        :studentName="selectedCert.fullName || selectedCert.studentName"
                         :courseName="selectedCert.courseName"
                         :courseCode="selectedCert.courseCode"
                         :grade="selectedCert.averageScore"

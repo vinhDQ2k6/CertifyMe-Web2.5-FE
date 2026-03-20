@@ -31,11 +31,11 @@ function viewSubmissions() {
 }
 
 function getStatusSeverity(status) {
-    return status === 'active' ? 'success' : 'warn';
+    return status === 'ACTIVE' || status === 'active' ? 'success' : 'warn';
 }
 
 function getStatusLabel(status) {
-    return status === 'active' ? '🟢 Active' : '📝 Draft';
+    return status === 'ACTIVE' || status === 'active' ? '🟢 Active' : '📝 Draft';
 }
 
 function openNewQuiz() {

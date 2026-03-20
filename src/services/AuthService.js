@@ -1,5 +1,5 @@
 import axiosInstance from '@/lib/apiFetcher/axiosInstance';
-import { fetchResource } from '@/lib/apiFetcher';
+import { createResource, fetchResource } from '@/lib/apiFetcher';
 
 const TOKEN_KEY = 'authToken';
 const USER_KEY = 'authUser';
@@ -102,11 +102,12 @@ const AuthService = {
     },
 
     /**
-     * Logout - call backend endpoint + clear auth data
+     * Logout - call backend endpoint (POST) + clear auth data
+     * API: POST /api/auth/logout
      */
     async logout() {
         try {
-            await fetchResource('/auth/logout');
+            await createResource('/auth/logout', {});
         } catch (error) {
             console.error('Logout error:', error);
         } finally {
