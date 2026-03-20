@@ -4,7 +4,15 @@ import { useRouter } from 'vue-router';
 const props = defineProps({
     courseId: {
         type: String,
-        required: true
+        required: false
+    },
+    id: {
+        type: String,
+        required: false
+    },
+    classId: {
+        type: String,
+        required: false
     },
     courseIcon: {
         type: String,
@@ -47,7 +55,10 @@ const props = defineProps({
 const router = useRouter();
 
 function viewCourse() {
-    router.push({ name: 'courseDetail', params: { id: props.courseId } });
+    const targetId = props.courseId || props.id || props.classId;
+    if (targetId) {
+        router.push({ name: 'courseDetail', params: { id: targetId } });
+    }
 }
 </script>
 
