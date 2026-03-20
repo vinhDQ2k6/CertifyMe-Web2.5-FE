@@ -113,4 +113,6 @@ const AuthService = {
             this.clearAuthData();
         }
     }
+};
+
 export default AuthService;
