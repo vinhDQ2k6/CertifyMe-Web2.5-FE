@@ -11,7 +11,7 @@
 
 ```
 /oauth2/redirect?token=eyJ...
-```
+```npm
 
 **Bây giờ:**
 
