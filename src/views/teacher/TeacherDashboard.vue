@@ -1,30 +1,23 @@
 <script setup>
-import ClassTable from '@/components/teacher/ClassTable.vue';
 import StatsCard from '@/components/shared/StatsCard.vue';
-import { useTeacher } from '@/composables/useTeacher';
+import ClassTable from '@/components/teacher/ClassTable.vue';
 import { useAuth } from '@/composables/useAuth';
+import { useErrorHandler } from '@/composables/useErrorHandler';
+import { useTeacher } from '@/composables/useTeacher';
 import { computed, onMounted } from 'vue';
 
 const { user } = useAuth();
 const { classes, loading, fetchClasses } = useTeacher();
+const { handleError } = useErrorHandler();
 
 const totalStudents = computed(() => classes.value.reduce((sum, c) => sum + (c.studentCount || 0), 0));
 const totalQuizzes = computed(() => classes.value.reduce((sum, c) => sum + (c.quizCount || 0), 0));
 
-// Mock data for FE-only testing (remove when integrating with BE)
-const mockClasses = [
-    { id: 'cl1', code: 'SD18301', courseName: 'Lập trình Java 6', studentCount: 30, quizCount: 5, status: 'active', createdDate: '2026-01-01' },
-    { id: 'cl2', code: 'SD18302', courseName: 'Lập trình React 3', studentCount: 28, quizCount: 5, status: 'active', createdDate: '2026-01-01' },
-    { id: 'cl3', code: 'SD18201', courseName: 'Phát triển Web 5', studentCount: 32, quizCount: 5, status: 'completed', createdDate: '2025-09-01' }
-];
-
 onMounted(async () => {
-    if (user.value?.id) {
-        await fetchClasses(user.value.id);
-    }
-    // Use mock data if no classes loaded from API
-    if (classes.value.length === 0) {
-        classes.value = mockClasses;
+    try {
+        await fetchClasses(user.value?.userId);
+    } catch (err) {
+        handleError(err, 'Tải danh sách lớp học');
     }
 });
 </script>
@@ -45,14 +38,7 @@ onMounted(async () => {
         <!-- Classes Table -->
         <div class="col-span-12">
             <div class="card">
-                <Toolbar class="mb-4">
-                    <template #start>
-                        <h5 class="m-0">📚 Danh sách lớp học</h5>
-                    </template>
-                    <template #end>
-                        <Button label="+ Tạo lớp" icon="pi pi-plus" />
-                    </template>
-                </Toolbar>
+                <h5 class="mb-4">📚 Danh sách lớp học</h5>
                 <ClassTable :classes="classes" :loading="loading" />
             </div>
         </div>

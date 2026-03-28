@@ -18,13 +18,15 @@ export function useAuth() {
      */
     const initAuth = () => {
         const token = AuthService.getToken();
+        const storedRole = AuthService.getRole();
 
         if (token && AuthService.isAuthenticated()) {
             const userInfo = AuthService.getUserFromToken();
             if (userInfo) {
                 user.value = userInfo;
                 isAuthenticated.value = true;
-                userRole.value = userInfo.role;
+                // Prefer stored role from backend, fallback to JWT role
+                userRole.value = storedRole || userInfo.role;
             }
         } else {
             isAuthenticated.value = false;
@@ -35,14 +37,34 @@ export function useAuth() {
 
     /**
      * Redirect to Google OAuth2 login page on backend
-     * Backend handles all OAuth2 flow
-     * @param {string} role - User selected role (STUDENT, TEACHER, ADMIN)
+     * Backend handles all OAuth2 flow and role-based redirects
      */
-    const redirectToLogin = (role) => {
+    const redirectToLogin = () => {
         const backendUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
         const baseUrl = backendUrl.replace(/\/api\/?$/, '');
-        const redirectUrl = role ? `${baseUrl}/oauth2/authorization/google?role=${role}` : `${baseUrl}/oauth2/authorization/google`;
-        window.location.href = redirectUrl;
+        window.location.href = `${baseUrl}/oauth2/authorization/google`;
+    };
+
+    /**
+     * Set user role - save to localStorage and update state
+     * @param {string} role - STUDENT, TEACHER, or ADMIN
+     */
+    const setRole = (role) => {
+        AuthService.setRole(role);
+        userRole.value = role;
+    };
+
+    /**
+     * Set auth token - save to localStorage and update axios headers
+     * @param {string} token - JWT token
+     */
+    const setToken = (token) => {
+        AuthService.setAuthToken(token);
+        const userInfo = AuthService.getUserFromToken();
+        if (userInfo) {
+            user.value = userInfo;
+            isAuthenticated.value = true;
+        }
     };
 
     /**
@@ -93,7 +115,7 @@ export function useAuth() {
             isAuthenticated.value = true;
             return userData;
         } catch (err) {
-            error.value = err.response?.data?.error || 'Failed to fetch user info';
+            error.value = err.message || 'Failed to fetch user info';
             throw err;
         } finally {
             loading.value = false;
@@ -164,6 +186,8 @@ export function useAuth() {
         // Methods
         initAuth,
         redirectToLogin,
+        setToken,
+        setRole,
         handleOAuth2Callback,
         fetchCurrentUser,
         checkRole,

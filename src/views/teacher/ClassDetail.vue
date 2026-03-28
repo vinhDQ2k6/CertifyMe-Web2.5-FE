@@ -1,55 +1,25 @@
 <script setup>
-import StudentTable from '@/components/teacher/StudentTable.vue';
 import QuizList from '@/components/student/QuizList.vue';
+import StudentTable from '@/components/teacher/StudentTable.vue';
+import { useErrorHandler } from '@/composables/useErrorHandler';
 import { useTeacher } from '@/composables/useTeacher';
-import { useRoute, useRouter } from 'vue-router';
 import { onMounted, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 const route = useRoute();
 const router = useRouter();
 const { currentClass, students, quizzes, loading, fetchClassDetail, fetchStudents, fetchQuizzes } = useTeacher();
+const { handleError } = useErrorHandler();
 const activeTab = ref(0);
-
-// Mock data for FE-only testing (remove when integrating with BE)
-const mockClass = { id: 'cl1', code: 'SD18301', courseName: 'Lập trình Java 6', courseId: 'c1', studentCount: 30, quizCount: 5, status: 'active' };
-
-const mockStudents = [
-    { id: 's1', name: 'Nguyễn Văn An', email: 'annv@fpt.edu.vn', completedQuizzes: 5, totalQuizzes: 5, status: 'passed' },
-    { id: 's2', name: 'Trần Thị Bình', email: 'binhtt@fpt.edu.vn', completedQuizzes: 4, totalQuizzes: 5, status: 'learning' },
-    { id: 's3', name: 'Lê Văn Cường', email: 'cuonglv@fpt.edu.vn', completedQuizzes: 3, totalQuizzes: 5, status: 'learning' },
-    { id: 's4', name: 'Phạm Thị Dung', email: 'dungpt@fpt.edu.vn', completedQuizzes: 5, totalQuizzes: 5, status: 'passed' },
-    { id: 's5', name: 'Hoàng Minh Đức', email: 'duchm@fpt.edu.vn', completedQuizzes: 1, totalQuizzes: 5, status: 'incomplete' },
-    { id: 's6', name: 'Võ Thị Hoa', email: 'hoavt@fpt.edu.vn', completedQuizzes: 4, totalQuizzes: 5, status: 'learning' }
-];
-
-const mockQuizzes = [
-    { id: 'q1', name: 'Lab 1: Biến và kiểu dữ liệu', score: 8.5, maxScore: 10, status: 'completed', isAvailable: true },
-    { id: 'q2', name: 'Lab 2: Vòng lặp và mảng', score: 9.0, maxScore: 10, status: 'completed', isAvailable: true },
-    { id: 'q3', name: 'Lab 3: OOP cơ bản', score: 7.5, maxScore: 10, status: 'completed', isAvailable: true },
-    { id: 'q4', name: 'Lab 4: Kế thừa và đa hình', score: null, maxScore: 10, status: 'pending', isAvailable: true },
-    { id: 'q5', name: 'Lab 5: Collections Framework', score: null, maxScore: 10, status: 'locked', isAvailable: false }
-];
 
 onMounted(async () => {
     const classId = route.params.id;
     try {
         await fetchClassDetail(classId);
         await fetchStudents(classId);
-        if (currentClass.value?.courseId) {
-            await fetchQuizzes(currentClass.value.courseId);
-        }
-    } catch {
-        // ignore API errors in FE-only mode
-    }
-    // Use mock data if nothing loaded from API
-    if (!currentClass.value) {
-        currentClass.value = mockClass;
-    }
-    if (students.value.length === 0) {
-        students.value = mockStudents;
-    }
-    if (quizzes.value.length === 0) {
-        quizzes.value = mockQuizzes;
+        await fetchQuizzes(classId);
+    } catch (err) {
+        handleError(err, 'Tải thông tin lớp học');
     }
 });
 
@@ -67,7 +37,7 @@ function goToQuizManagement() {
         <!-- Header -->
         <div class="flex items-center gap-4 mb-4">
             <Button label="← Quay lại" text @click="goBack" />
-            <h3 v-if="currentClass" class="m-0">📚 Lớp {{ currentClass.code }} - {{ currentClass.courseName }}</h3>
+            <h3 v-if="currentClass" class="m-0">📚 Lớp {{ currentClass.classCode }} - {{ currentClass.courseName }}</h3>
         </div>
 
         <div v-if="loading" class="text-center py-8">
@@ -91,10 +61,7 @@ function goToQuizManagement() {
                 <div class="card">
                     <!-- Tab: Students -->
                     <div v-if="activeTab === 0">
-                        <div class="flex justify-between items-center mb-4">
-                            <h5 class="m-0">DANH SÁCH SINH VIÊN ({{ students.length }})</h5>
-                            <Button label="+ Thêm SV" icon="pi pi-plus" size="small" />
-                        </div>
+                        <h5 class="mb-4">DANH SÁCH SINH VIÊN ({{ students.length }})</h5>
                         <StudentTable :students="students" :classId="route.params.id" :loading="loading" />
                     </div>
 

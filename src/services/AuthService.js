@@ -1,7 +1,9 @@
 import axiosInstance from '@/lib/apiFetcher/axiosInstance';
+import { createResource, fetchResource } from '@/lib/apiFetcher';
 
 const TOKEN_KEY = 'authToken';
 const USER_KEY = 'authUser';
+const ROLE_KEY = 'authRole';
 
 const AuthService = {
     /**
@@ -21,11 +23,27 @@ const AuthService = {
     },
 
     /**
+     * Set user role - save to localStorage
+     * @param {string} role - STUDENT, TEACHER, or ADMIN
+     */
+    setRole(role) {
+        localStorage.setItem(ROLE_KEY, role);
+    },
+
+    /**
+     * Get user role from localStorage
+     */
+    getRole() {
+        return localStorage.getItem(ROLE_KEY);
+    },
+
+    /**
      * Clear auth data from localStorage and axios headers
      */
     clearAuthData() {
         localStorage.removeItem(TOKEN_KEY);
         localStorage.removeItem(USER_KEY);
+        localStorage.removeItem(ROLE_KEY);
         delete axiosInstance.defaults.headers.common['Authorization'];
     },
 
@@ -72,43 +90,24 @@ const AuthService = {
      * Returns UserResponse from backend
      */
     async getCurrentUser() {
-        try {
-            const response = await axiosInstance.get('/auth/me');
-
-            if (response.data.success) {
-                return response.data.data;
-            } else {
-                throw new Error(response.data.error || 'Failed to fetch user');
-            }
-        } catch (error) {
-            console.error('Error fetching current user:', error);
-            throw error;
-        }
+        return await fetchResource('/auth/me');
     },
 
     /**
      * Check role of current user via /api/auth/check-role
-     * Returns message like "You are logged in as: STUDENT"
+     * Returns success message
      */
     async checkRole() {
-        try {
-            const response = await axiosInstance.get('/auth/check-role');
-            return response.data;
-        } catch (error) {
-            console.error('Check role error:', error);
-            throw error;
-        }
+        return await fetchResource('/auth/check-role');
     },
 
     /**
-     * Logout - call backend endpoint + clear auth data
+     * Logout - call backend endpoint (POST) + clear auth data
+     * API: POST /api/auth/logout
      */
     async logout() {
         try {
-            const response = await axiosInstance.post('/auth/logout');
-            if (response.data.success) {
-                console.log(response.data.message);
-            }
+            await createResource('/auth/logout', {});
         } catch (error) {
             console.error('Logout error:', error);
         } finally {

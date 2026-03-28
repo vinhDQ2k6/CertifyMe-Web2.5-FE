@@ -37,10 +37,10 @@ export function useTeacher() {
         }
     };
 
-    const fetchQuizzes = async (courseId) => {
+    const fetchQuizzes = async (classId) => {
         loading.value = true;
         try {
-            quizzes.value = await QuizService.getQuizzesForCourse(courseId);
+            quizzes.value = await QuizService.getQuizzesForClass(classId);
         } finally {
             loading.value = false;
         }
@@ -61,9 +61,9 @@ export function useTeacher() {
         loading.value = true;
         try {
             await QuizService.publishQuiz(quizId);
-            const index = quizzes.value.findIndex((q) => q.id === quizId);
+            const index = quizzes.value.findIndex((q) => q.quizId === quizId);
             if (index !== -1) {
-                quizzes.value[index].status = 'published';
+                quizzes.value[index].status = 'ACTIVE';
             }
         } finally {
             loading.value = false;

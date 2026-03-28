@@ -1,21 +1,26 @@
 <script setup>
 import { useAuth } from '@/composables/useAuth';
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
+import { useRoute } from 'vue-router';
 
 const { redirectToLogin, loading } = useAuth();
+const route = useRoute();
+const errorMessage = ref('');
 
-const selectedRole = ref(null);
-
-const roleOptions = [
-    { label: 'Học sinh', value: 'STUDENT' },
-    { label: 'Giáo viên', value: 'TEACHER' },
-    { label: 'Quản trị viên', value: 'ADMIN' }
-];
+onMounted(() => {
+    // Check for error param from OAuth redirect
+    const error = route.query.error;
+    if (error) {
+        if (error === 'missing_params') {
+            errorMessage.value = 'Đã xảy ra lỗi trong quá trình đăng nhập. Vui lòng thử lại.';
+        } else {
+            errorMessage.value = error;
+        }
+    }
+});
 
 function handleGoogleLogin() {
-    if (selectedRole.value) {
-        redirectToLogin(selectedRole.value);
-    }
+    redirectToLogin();
 }
 </script>
 
@@ -37,12 +42,13 @@ function handleGoogleLogin() {
                         <span class="text-muted-color font-medium">Đăng nhập để tiếp tục</span>
                     </div>
 
+                    <!-- Error message -->
+                    <div v-if="errorMessage" class="mb-4 p-3 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded-lg text-center">
+                        {{ errorMessage }}
+                    </div>
+
                     <div class="flex flex-col items-center gap-4">
-                        <div class="w-full md:w-[30rem]">
-                            <label class="block text-sm font-medium text-surface-900 dark:text-surface-0 mb-2"> Chọn vai trò </label>
-                            <Dropdown v-model="selectedRole" :options="roleOptions" option-label="label" option-value="value" placeholder="Vui lòng chọn vai trò" class="w-full" />
-                        </div>
-                        <Button label="Đăng nhập với Google" icon="pi pi-google" class="w-full md:w-[30rem]" :loading="loading" :disabled="!selectedRole" @click="handleGoogleLogin" />
+                        <Button label="Đăng nhập với Google" icon="pi pi-google" class="w-full md:w-[30rem]" :loading="loading" @click="handleGoogleLogin" />
                         <span class="text-muted-color text-sm">Chỉ hỗ trợ email @fpt.edu.vn</span>
                     </div>
                 </div>

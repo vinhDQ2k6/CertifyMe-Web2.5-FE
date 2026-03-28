@@ -13,8 +13,12 @@ const CertificateService = {
         return await fetchResource('/certificates/search', { params: { q: query } });
     },
 
-    async getRecentCertificates(limit = 10) {
-        return await fetchResource('/certificates/recent', { params: { limit } });
+    /**
+     * Get recent certificates with pagination
+     * API: GET /api/certificates/recent?limit=10&page=1
+     */
+    async getRecentCertificates(limit = 10, page = 1) {
+        return await fetchResource('/certificates/recent', { params: { limit, page } });
     },
 
     async verifyCertificateOnChain(certId) {
@@ -25,8 +29,15 @@ const CertificateService = {
         return await fetchResource(`/certificates/${certId}/pdf`, { responseType: 'blob' });
     },
 
-    async revokeCertificate(certId, reason) {
-        return await createResource(`/certificates/${certId}/revoke`, { reason });
+    /**
+     * Revoke a certificate
+     * API: POST /api/certificates/{certificateId}/revoke
+     * @param {string} certId - Certificate ID
+     * @param {string} reason - Reason for revocation
+     * @param {string} revokedBy - Admin user ID who is revoking
+     */
+    async revokeCertificate(certId, reason, revokedBy) {
+        return await createResource(`/certificates/${certId}/revoke`, { reason, revokedBy });
     },
 
     async getCertificateStats() {

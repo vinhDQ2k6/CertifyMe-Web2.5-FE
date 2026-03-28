@@ -1,80 +1,24 @@
 <script setup>
-import QuizList from '@/components/student/QuizList.vue';
-import CertificateCard from '@/components/student/CertificateCard.vue';
 import BlockchainInfo from '@/components/shared/BlockchainInfo.vue';
+import CertificateCard from '@/components/student/CertificateCard.vue';
+import QuizList from '@/components/student/QuizList.vue';
+import { useErrorHandler } from '@/composables/useErrorHandler';
 import { useStudent } from '@/composables/useStudent';
-import { useRoute, useRouter } from 'vue-router';
+import CertificateService from '@/services/CertificateService';
 import { onMounted, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 const route = useRoute();
 const router = useRouter();
 const { currentCourse, loading, getCourseDetail } = useStudent();
+const { handleError, showSuccess } = useErrorHandler();
 const showBlockchainInfo = ref(false);
-
-// Mock data for FE-only testing (remove when integrating with BE)
-const mockCourseInProgress = {
-    courseIcon: '☕',
-    courseName: 'Lập trình Java 6',
-    courseCode: 'SD18301',
-    teacherName: 'Thầy Nguyễn Văn A',
-    startDate: '01/01/2026',
-    endDate: '01/04/2026',
-    progress: 80,
-    totalQuizzes: 5,
-    completedQuizzes: 4,
-    isCompleted: false,
-    studentName: 'Trần Văn B',
-    averageScore: 8.5,
-    quizzes: [
-        { id: 'q1', name: 'Lab 1: Biến và kiểu dữ liệu', score: 8.5, maxScore: 10, status: 'completed', isAvailable: true },
-        { id: 'q2', name: 'Lab 2: Vòng lặp và mảng', score: 9.0, maxScore: 10, status: 'completed', isAvailable: true },
-        { id: 'q3', name: 'Lab 3: OOP cơ bản', score: 7.5, maxScore: 10, status: 'completed', isAvailable: true },
-        { id: 'q4', name: 'Lab 4: Kế thừa và đa hình', score: 8.0, maxScore: 10, status: 'completed', isAvailable: true },
-        { id: 'q5', name: 'Lab 5: Collections Framework', score: null, maxScore: 10, status: 'pending', isAvailable: true }
-    ]
-};
-
-const mockCourseCompleted = {
-    courseIcon: '🐍',
-    courseName: 'Lập trình Python',
-    courseCode: 'SD18101',
-    teacherName: 'Cô Phạm Thị D',
-    startDate: '01/09/2025',
-    endDate: '01/12/2025',
-    progress: 100,
-    totalQuizzes: 5,
-    completedQuizzes: 5,
-    isCompleted: true,
-    studentName: 'Trần Văn B',
-    averageScore: 9.2,
-    completionDate: '2025-12-01',
-    quizzes: [
-        { id: 'q1', name: 'Lab 1: Cú pháp Python', score: 9.0, maxScore: 10, status: 'completed', isAvailable: true },
-        { id: 'q2', name: 'Lab 2: List và Dictionary', score: 9.5, maxScore: 10, status: 'completed', isAvailable: true },
-        { id: 'q3', name: 'Lab 3: Functions', score: 8.5, maxScore: 10, status: 'completed', isAvailable: true },
-        { id: 'q4', name: 'Lab 4: File I/O', score: 9.0, maxScore: 10, status: 'completed', isAvailable: true },
-        { id: 'q5', name: 'Lab 5: OOP in Python', score: 10, maxScore: 10, status: 'completed', isAvailable: true }
-    ],
-    certificate: {
-        verificationHash: '0x7a8b9c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b',
-        blockchainInfo: {
-            hash: '0x7a8b9c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b',
-            block: '12345678',
-            txHash: '0x999888777666555444333222111000aaabbbccc',
-            contract: '0xABC123DEF456789012345678901234567890ABCD'
-        }
-    }
-};
 
 onMounted(async () => {
     try {
         await getCourseDetail(route.params.id);
-    } catch {
-        // ignore API errors in FE-only mode
-    }
-    // Use mock data if no course loaded from API
-    if (!currentCourse.value) {
-        currentCourse.value = route.params.id === 'c4' ? mockCourseCompleted : mockCourseInProgress;
+    } catch (err) {
+        handleError(err, 'Tải chi tiết khóa học');
     }
 });
 
@@ -83,15 +27,28 @@ function goBack() {
 }
 
 function handleQuizAction({ quizId, action }) {
-    console.log('Quiz action:', quizId, action);
+    if (action === 'start' || action === 'review') {
+        router.push({ name: 'quizPage', params: { quizId } });
+    }
 }
 
-function handleDownload() {
-    console.log('Download certificate');
+async function handleDownload() {
+    if (!currentCourse.value?.certificate?.certificateId) return;
+    try {
+        await CertificateService.downloadCertificatePDF(currentCourse.value.certificate.certificateId);
+        showSuccess('Thành công', 'Đã tải xuống chứng chỉ PDF');
+    } catch (err) {
+        handleError(err, 'Tải PDF chứng chỉ');
+    }
 }
 
 function handleShare() {
-    console.log('Share certificate');
+    if (!currentCourse.value?.certificate?.verificationHash) return;
+    const url = `${window.location.origin}/verify/${currentCourse.value.certificate.verificationHash}`;
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(url);
+        showSuccess('Đã sao chép', 'Link xác minh đã được sao chép');
+    }
 }
 
 function handleVerify() {
@@ -108,7 +65,13 @@ function handleVerify() {
             <ProgressSpinner />
         </div>
 
-        <div v-else-if="currentCourse">
+        <div v-else-if="!currentCourse" class="card text-center py-12">
+            <div class="text-4xl mb-3">📭</div>
+            <p class="text-muted-color">Không tìm thấy thông tin khóa học.</p>
+            <Button label="Quay lại" class="mt-4" @click="goBack" />
+        </div>
+
+        <div v-else>
             <!-- Course Header -->
             <div class="card mb-4">
                 <div class="flex items-center gap-3 mb-2">
